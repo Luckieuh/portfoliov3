@@ -43,31 +43,7 @@ export default async function RealisationDetail({ params }: Props) {
       <div className="flex space-x-6">
 
         <div className='w-1/2'>
-          {/* Couverture YouTube (prioritaire) */}
-          {project.youtubeUrl && (
-            <div className="mb-6 w-full">
-              <div className="relative w-full pt-[56.25%] bg-neutral-800 rounded-lg overflow-hidden group cursor-pointer">
-                <img
-                  src={getYoutubeThumbnail(project.youtubeUrl) || ''}
-                  alt="Miniature vidéo YouTube"
-                  className="absolute top-0 left-0 w-full h-full object-cover"
-                />
-                {/* Play button overlay */}
-                <div className="absolute top-0 left-0 w-full h-full bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                  <svg className="w-16 h-16 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Carousel d'images (si pas de YouTube) */}
-          {!project.youtubeUrl && project.images.length > 0 && (
-            <ImageCarousel images={project.images} title={project.title} />
-          )}
-
-          {/* Lecteur YouTube plein écran */}
+          {/* Lecteur YouTube (prioritaire et unique) */}
           {project.youtubeUrl && (
             <div className="mb-6 w-full">
               <div className="relative w-full pt-[56.25%]">
@@ -83,16 +59,13 @@ export default async function RealisationDetail({ params }: Props) {
             </div>
           )}
 
-          {/* Carousel d'images secondaire (après YouTube) */}
-          {project.youtubeUrl && project.images.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-3">Galerie du projet</h3>
-              <ImageCarousel images={project.images} title={project.title} />
-            </div>
+          {/* Carousel d'images (si pas de YouTube) */}
+          {!project.youtubeUrl && project.images.length > 0 && (
+            <ImageCarousel images={project.images} title={project.title} />
           )}
 
-          {/* Vidéo uploadée (si pas de YouTube) */}
-          {project.videoUrl && !project.youtubeUrl && (
+          {/* Vidéo uploadée (si pas de YouTube et pas d'images) */}
+          {!project.youtubeUrl && project.videoUrl && project.images.length === 0 && (
             <div className="mb-6">
               <video 
                 src={project.videoUrl}

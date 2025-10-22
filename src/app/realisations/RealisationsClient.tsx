@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { getYoutubeThumbnail } from '@/lib/youtube';
 
 type Project = {
   id: number;
@@ -9,6 +10,7 @@ type Project = {
   description: string;
   images: Array<{ id: number; url: string }>;
   videoUrl: string | null;
+  youtubeUrl: string | null;
   link: string | null;
   categories: string[];
   createdAt: string;
@@ -263,7 +265,30 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                 <Link key={project.id} href={`/realisations/${project.id}`} className="block group">
                                     <div className="overflow-hidden rounded-lg cursor-pointer transition-all duration-300">
                                         <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-                                            {project.images.length > 0 && (
+                                            {/* Miniature YouTube (prioritaire) */}
+                                            {project.youtubeUrl && (
+                                                <>
+                                                    <div 
+                                                        className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                                                        style={{ backgroundImage: `url('${getYoutubeThumbnail(project.youtubeUrl)}')` }}
+                                                    ></div>
+                                                    <div className="relative w-full h-full flex items-center justify-center bg-neutral-900">
+                                                        <img 
+                                                            src={getYoutubeThumbnail(project.youtubeUrl) || ''} 
+                                                            alt={project.title} 
+                                                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        {/* Play button overlay */}
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                                            <svg className="w-12 h-12 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {/* Images (si pas de YouTube) */}
+                                            {!project.youtubeUrl && project.images.length > 0 && (
                                                 <>
                                                     <div 
                                                         className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
@@ -278,7 +303,8 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                     </div>
                                                 </>
                                             )}
-                                            {project.videoUrl && project.images.length === 0 && (
+                                            {/* Vidéo uploadée (si pas de YouTube et pas d'images) */}
+                                            {!project.youtubeUrl && project.videoUrl && project.images.length === 0 && (
                                                 <video 
                                                     src={project.videoUrl}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -322,7 +348,30 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                 </h2>
                                 <div className="overflow-hidden rounded-xl">
                                     <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-                                        {latestProject.images.length > 0 && (
+                                        {/* Miniature YouTube (prioritaire) */}
+                                        {latestProject.youtubeUrl && (
+                                            <>
+                                                <div 
+                                                    className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                                                    style={{ backgroundImage: `url('${getYoutubeThumbnail(latestProject.youtubeUrl)}')` }}
+                                                ></div>
+                                                <div className="relative w-full h-full flex items-center justify-center bg-neutral-900">
+                                                    <img 
+                                                        src={getYoutubeThumbnail(latestProject.youtubeUrl) || ''} 
+                                                        alt={latestProject.title} 
+                                                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                    />
+                                                    {/* Play button overlay */}
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                                        <svg className="w-12 h-12 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M8 5v14l11-7z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                        {/* Images (si pas de YouTube) */}
+                                        {!latestProject.youtubeUrl && latestProject.images.length > 0 && (
                                             <>
                                                 <div 
                                                     className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
