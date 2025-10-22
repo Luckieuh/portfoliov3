@@ -1,10 +1,12 @@
-'use client';
 import Header from './components/Header';
 import Tore from './components/tore';
 import Hole from './components/Hole';
 import Footer from './components/Footer';
 import LogoLoop from './components/LogoLoop';
-import Banner from './public/Banner.png';
+import RecentRealisations from './components/RecentRealisations';
+import Link from 'next/link';
+import prisma from '../../lib/prisma';
+
 
 const socialItems = [
   { label: 'Instagram', link: 'https://www.instagram.com/lucsar.tsn/' },
@@ -12,11 +14,21 @@ const socialItems = [
   { label: 'LinkedIn', link: 'https://linkedin.com' }
 ];
 
-export default function Home() {
+export default async function Home() {
+  // Récupérer les 3 dernières réalisations
+  const realisations = await prisma.realisation.findMany({
+    take: 3,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      images: {
+        orderBy: { createdAt: 'asc' },
+      },
+    },
+  });
     return (
         <div className="w-full min-h-screen overflow-hidden bg-white dark:bg-neutral-900">
                     <div className="relative w-full">
-                        <div className="w-full h-[90vh] bg-[url('./public/Banner.png')] bg-cover bg-center bg-no-repeat"></div>
+                        <div className="w-full h-[90vh] bg-[url('/Banner.png')] bg-cover bg-center bg-no-repeat"></div>
 
                         <Header />
 
@@ -112,42 +124,8 @@ export default function Home() {
                                     <img className='w-[80%] block dark:hidden' src='/darklastreal.svg' alt='Mes dernières réalisations' />
                         </div>
 
-
-
-
-
-
-
-
-
-
-
-                    <div className=" grid grid-cols-3 grid-rows-4 gap-2 md:gap-4 justify-center items-center mt-15 mx-auto px-4 md:px-0 max-w-[85%]">
-                        <div className="col-span-2">
-                            <img src='/IMG_2661-4.png' loading="lazy" alt='Bateau et building' className='w-full h-auto object-cover'/>
-                        </div>
-                        <div className="row-span-2 col-start-3 h-full">
-                            <img src='/IMG_2138-2-2.png' loading="lazy" alt="Horizon avec des montagnes et un lac" className='w-full h-full object-cover'/>
-                        </div>
-                        <div className="col-start-3 row-start-3">
-                            <img src='/9-3.png' loading="lazy" alt="Feuilles d'arbre vu du dessous" className='w-full h-auto object-cover'/>
-                        </div>
-                        <div className="col-span-2 col-start-2 row-start-4 h-full">
-                            <img src='/IMG_1999.png' loading="lazy" alt='Montagnes enneigées et sapins' className='w-full h-full object-cover'/>
-                        </div>
-                        <div className="row-span-2 col-start-1 row-start-3 h-full">
-                            <img src='/IMG_2012.png' loading="lazy" alt='Montagne au loin avec un lac' className='w-full h-full object-cover'/>
-                        </div>
-                        <div className="col-start-1 row-start-2">
-                            <img src='/IMG_2530-3.png' loading="lazy" alt="Bateau de croisière seul au milieu de l'eau" className='w-full h-auto object-cover'/>
-                        </div>
-                        <div className="col-start-2 row-start-2">
-                        <img src='/IMG_1581-5.png' loading="lazy" alt='Skytrain dans le noir avec un lampadaire' className='w-full h-auto object-cover'/>
-                        </div>
-                        <div className="col-start-2 row-start-3 h-full">
-                            <img src='/IMG_1506-2.png' loading="lazy" alt='Homme seul derrière une vitre' className='w-full h-full object-cover rotate-15 shadow-xl/70'/>
-                        </div>
-                    </div>
+                        {/* Grille des 3 dernières réalisations */}
+                        <RecentRealisations realisations={realisations} />
     
             <Footer />
         </div>
