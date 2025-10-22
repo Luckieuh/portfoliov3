@@ -4,3 +4,8 @@
 *.webm filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
+
+# Exception pour les fichiers du dossier public (petits fichiers)
+public/*.png !filter=lfs
+public/*.jpg !filter=lfs
+public/*.jpeg !filter=lfs
