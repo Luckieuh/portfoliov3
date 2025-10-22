@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type Image = {
   id: number;
@@ -14,6 +14,8 @@ type ImageCarouselProps = {
 
 export default function ImageCarousel({ images, title }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) =>
@@ -31,6 +33,41 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
     setCurrentIndex(index);
   };
 
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const goToPreviousLightbox = () => {
+    setLightboxIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
+
+  const goToNextLightbox = () => {
+    setLightboxIndex((prevIndex) =>
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  // Gérer les touches clavier
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen) return;
+      
+      if (e.key === 'ArrowLeft') goToPreviousLightbox();
+      if (e.key === 'ArrowRight') goToNextLightbox();
+      if (e.key === 'Escape') closeLightbox();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen]);
+
   if (images.length === 0) {
     return null;
   }
@@ -40,7 +77,10 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
       {/* Carousel principal */}
       <div className="relative w-full rounded-lg overflow-hidden shadow-lg group">
         {/* Images */}
-        <div className="relative w-full aspect-video bg-neutral-900">
+        <div 
+          className="relative w-full aspect-video bg-neutral-900 cursor-pointer"
+          onClick={() => openLightbox(currentIndex)}
+        >
           {images.map((image, index) => (
             <div
               key={image.id}
@@ -137,6 +177,114 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
               />
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Modal Lightbox */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          {/* Conteneur de l'image */}
+          <div 
+            className="relative w-full h-full flex items-center justify-center px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image plein écran */}
+            <img
+              src={images[lightboxIndex].url}
+              alt={`${title} - Image ${lightboxIndex + 1}`}
+              className="max-w-4xl max-h-[90vh] object-contain"
+            />
+
+            {/* Bouton fermer */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              aria-label="Fermer"
+            >
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            {/* Navigation précédent */}
+            {images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPreviousLightbox();
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Image précédente"
+              >
+                <svg
+                  className="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {/* Navigation suivant */}
+            {images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNextLightbox();
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Image suivante"
+              >
+                <svg
+                  className="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {/* Indicateur de position */}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-white/10 backdrop-blur px-4 py-2 rounded-full">
+                <span className="text-white text-sm font-medium">
+                  {lightboxIndex + 1} / {images.length}
+                </span>
+              </div>
+            )}
+
+            {/* Info clavier */}
+            <div className="absolute top-4 left-4 text-white/60 text-sm hidden md:block">
+              <p>← → pour naviguer • ESC pour fermer</p>
+            </div>
+          </div>
         </div>
       )}
     </div>

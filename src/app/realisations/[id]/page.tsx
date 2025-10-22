@@ -39,35 +39,15 @@ export default async function RealisationDetail({ params }: Props) {
           textColor='#FFFFFF'
           link='/realisations'
         />
-      <div className="">
+      <div className="flex ">
 
-        <h1 className="text-5xl font-bold text-neutral-800 dark:text-white mb-4">
-          {project.title}
-        </h1>
+        <div className='w-1/2'>
+          {/* Carousel d'images */}
+          {project.images.length > 0 && (
+            <ImageCarousel images={project.images} title={project.title} />
+          )}
 
-        {project.categories.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-                {project.categories.map((category, idx) => (
-                    <span 
-                        key={idx}
-                        className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
-                    >
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </span>
-                ))}
-            </div>
-        )}
-
-        <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
-          {project.description}
-        </p>
-
-        {/* Carousel d'images */}
-        {project.images.length > 0 && (
-          <ImageCarousel images={project.images} title={project.title} />
-        )}
-
-        {project.videoUrl && (
+          {project.videoUrl && (
           <div className="mb-6">
             <video 
               src={project.videoUrl}
@@ -76,6 +56,36 @@ export default async function RealisationDetail({ params }: Props) {
             />
           </div>
         )}
+        </div>
+
+
+        <div className='w-1/2'>
+          <h1 className="text-5xl font-bold text-neutral-800 dark:text-white mb-4">
+            {project.title}
+          </h1>
+
+          {project.categories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                  {project.categories.map((category, idx) => (
+                      <span 
+                          key={idx}
+                          className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
+                      >
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </span>
+                  ))}
+              </div>
+          )}
+
+          <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
+            {project.description}
+          </p>
+        </div>
+        
+
+
+
+
 
         {project.link && (
           <a 
