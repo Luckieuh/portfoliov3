@@ -10,8 +10,9 @@ interface MultiImageUploadProps {
 export default function MultiImageUpload({ onImagesChange }: MultiImageUploadProps) {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-  const handleImageUpload = (url: string) => {
-    const newUrls = [...imageUrls, url];
+  const handleImageUpload = (result: string | string[]) => {
+    const urls = Array.isArray(result) ? result : [result];
+    const newUrls = [...imageUrls, ...urls];
     setImageUrls(newUrls);
     onImagesChange(newUrls);
   };
@@ -26,9 +27,9 @@ export default function MultiImageUpload({ onImagesChange }: MultiImageUploadPro
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-          Ajouter des images
+          Ajouter des images (plusieurs fichiers possibles)
         </h3>
-        <ImageUpload onUploadSuccess={handleImageUpload} accept="image/*" />
+        <ImageUpload onUploadSuccess={handleImageUpload} accept="image/*" multiple={true} />
       </div>
 
       {imageUrls.length > 0 && (

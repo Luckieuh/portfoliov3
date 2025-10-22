@@ -32,7 +32,8 @@ export default function AdminPage() {
     setFormData(prev => ({ ...prev, imageUrls: urls }));
   };
 
-  const handleVideoUpload = (url: string) => {
+  const handleVideoUpload = (result: string | string[]) => {
+    const url = Array.isArray(result) ? result[0] : result;
     setFormData(prev => ({ ...prev, videoUrl: url }));
     setMessage({ type: 'success', text: 'Vidéo uploadée avec succès!' });
   };

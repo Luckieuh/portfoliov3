@@ -81,7 +81,7 @@ export default async function RealisationDetail({ params }: Props) {
             {project.description}
           </p>
 
-          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400'>
+          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400 mb-4'>
             <p className='font-bold'>
               Date :
             </p>
@@ -94,26 +94,22 @@ export default async function RealisationDetail({ params }: Props) {
             </p>
           </div>
 
-          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400'>
+          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400 mb-4'>
             <p className='font-bold'>
               Lieu :
             </p>
-            <p>
-              {project.createdAt.toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-              })}
-            </p>
-          </div>
-
-          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400'>
-            <p className='font-bold'>
-              Lieu :
-            </p>
-            <p>
-              {project.location}
-            </p>
+            {project.location ? (
+              <a 
+                href={`https://www.google.com/maps/search/${encodeURIComponent(project.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+              >
+                {project.location}
+              </a>
+            ) : (
+              <p className="text-neutral-500">-</p>
+            )}
           </div>
 
         </div>
