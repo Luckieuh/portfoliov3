@@ -4,6 +4,7 @@ import Tore from './components/tore';
 import Hole from './components/Hole';
 import Footer from './components/Footer';
 import LogoLoop from './components/LogoLoop';
+import Banner from './public/Banner.png';
 
 const socialItems = [
   { label: 'Instagram', link: 'https://www.instagram.com/lucsar.tsn/' },
@@ -15,7 +16,7 @@ export default function Home() {
     return (
         <div className="w-full min-h-screen overflow-hidden bg-white dark:bg-neutral-900">
                     <div className="relative w-full">
-                        <div className="w-full h-[90vh] bg-[url('/Banner.png')] bg-cover bg-center bg-no-repeat"></div>
+                        <div className="w-full h-[90vh] bg-[url('./public/Banner.png')] bg-cover bg-center bg-no-repeat"></div>
 
                         <Header />
 
