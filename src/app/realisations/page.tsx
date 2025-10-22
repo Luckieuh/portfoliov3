@@ -26,8 +26,6 @@ export default async function Realisation() {
     return (
         <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 overflow-x-hidden relative">
             {/* SVG en arrière-plan */}
-
-            <h1>TEST</h1>
             <div className='absolute w-full h-full'>
                 <RealSVG />
             </div>
