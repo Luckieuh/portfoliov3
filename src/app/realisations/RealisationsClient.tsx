@@ -260,9 +260,9 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                             </div>
                         ) : (
                             filteredAndSortedProjects.map((project) => (
-                                <div key={project.id} className="overflow-hidden">
-                                    <Link href={`/realisations/${project.id}`} className="block">
-                                        <div className="relative w-full aspect-video rounded-xl overflow-hidden cursor-pointer transition-transform hover:scale-[1.02] duration-300">
+                                <Link key={project.id} href={`/realisations/${project.id}`} className="block group">
+                                    <div className="overflow-hidden rounded-lg cursor-pointer transition-all duration-300">
+                                        <div className="relative w-full aspect-video rounded-xl overflow-hidden">
                                             {project.images.length > 0 && (
                                                 <>
                                                     <div 
@@ -273,7 +273,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                         <img 
                                                             src={project.images[0].url} 
                                                             alt={project.title} 
-                                                            className="max-w-full max-h-full object-contain"
+                                                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
                                                         />
                                                     </div>
                                                 </>
@@ -281,32 +281,32 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                             {project.videoUrl && project.images.length === 0 && (
                                                 <video 
                                                     src={project.videoUrl}
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                     muted
                                                     loop
                                                 />
                                             )}
                                         </div>
-                                    </Link>
-                                    
-                                    <div className="mt-2">
-                                        <h3 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
-                                            {project.title}
-                                        </h3>
-                                        {project.categories.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mb-2">
-                                                {project.categories.map((category, idx) => (
-                                                    <span 
-                                                        key={idx}
-                                                        className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
-                                                    >
-                                                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+                                        
+                                        <div className="mt-2 p-2">
+                                            <h3 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
+                                                {project.title}
+                                            </h3>
+                                            {project.categories.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mb-2">
+                                                    {project.categories.map((category, idx) => (
+                                                        <span 
+                                                            key={idx}
+                                                            className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
+                                                        >
+                                                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))
                         )}
                     </div>
@@ -315,13 +315,13 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                 {/* Sidebar - Dernier projet */}
                 {latestProject && (
                     <div className='hidden lg:block w-[30%] mx-6 scale-90'>
-                        <div className='box-shadow-glow-orange p-3 rounded-xl'>
-                            <h2 className='w-full flex justify-center text-3xl font-black text-neutral-800 dark:text-white mb-4'>
-                                DERNIER PROJET
-                            </h2>
-                            <div className="overflow-hidden">
-                                <Link href={`/realisations/${latestProject.id}`} className="block">
-                                    <div className="relative w-full aspect-video rounded-xl overflow-hidden cursor-pointer transition-transform hover:scale-[1.02] duration-300">
+                        <Link href={`/realisations/${latestProject.id}`} className="block group">
+                            <div className='box-shadow-glow-orange p-3 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/40'>
+                                <h2 className='w-full flex justify-center text-3xl font-black text-neutral-800 dark:text-white mb-4 group-hover:text-orange-500 transition-colors'>
+                                    DERNIER PROJET
+                                </h2>
+                                <div className="overflow-hidden rounded-xl">
+                                    <div className="relative w-full aspect-video rounded-xl overflow-hidden">
                                         {latestProject.images.length > 0 && (
                                             <>
                                                 <div 
@@ -332,20 +332,20 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                     <img 
                                                         src={latestProject.images[0].url} 
                                                         alt={latestProject.title} 
-                                                        className="max-w-full max-h-full object-contain"
+                                                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform ease-in-out duration-300"
                                                     />
                                                 </div>
                                             </>
                                         )}
                                     </div>
-                                </Link>
-                                <div className="mt-2">
-                                    <h3 className="text-2xl font-bold text-neutral-800 dark:text-white">
-                                        {latestProject.title}
-                                    </h3>
+                                    <div className="mt-2">
+                                        <h3 className="text-2xl font-bold text-neutral-800 dark:text-white group-hover:text-orange-500 transition-colors">
+                                            {latestProject.title}
+                                        </h3>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 )}
             </div>
