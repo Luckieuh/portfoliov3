@@ -40,3 +40,15 @@ export function getYoutubeEmbedUrl(url: string): string | null {
   if (!videoId) return null;
   return `https://www.youtube.com/embed/${videoId}?rel=0`;
 }
+
+/**
+ * Génère l'URL de la miniature YouTube
+ * Retourne la miniature en haute qualité (maxresdefault)
+ * Si elle n'existe pas, retourne la qualité standard (hqdefault)
+ */
+export function getYoutubeThumbnail(url: string): string | null {
+  const videoId = extractYoutubeId(url);
+  if (!videoId) return null;
+  // maxresdefault est la meilleure qualité disponible
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
