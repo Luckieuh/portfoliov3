@@ -145,7 +145,7 @@ export default function Propos() {
                                     <BtnShadow 
                                         bgColor="rgba(29, 47, 66, 0.4)"
                                         borderColor="#60CA91"
-                                        img="/Davinci.png"
+                                        img="/Davinci.webp"
                                         text="Davinci Resolve"
                                         textColor="white"
                                     />
@@ -172,7 +172,7 @@ export default function Propos() {
                                     <BtnShadow 
                                         bgColor="rgb(42, 42, 42, 0.6)"
                                         borderColor="#A259FF"
-                                        img="/figma.png"
+                                        img="/Figma.png"
                                         text="Figma"
                                         textColor="white"
                                     />

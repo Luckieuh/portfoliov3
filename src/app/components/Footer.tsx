@@ -5,7 +5,7 @@ export default function Footer() {
             <footer className='w-full min-h-fit bottom-0 relative flex flex-col lg:flex-row bg-black justify-between mt-5 pt-4 text-white pb-8 px-4 lg:px-12 space-x-4'>
                 <div className='h-fit w-full md:w-[50%] mb-6 lg:mb-0'>
                     <div className='flex flex-row w-fit'>
-                        <img src='/IMG_1949-2-3.png' className='rounded-lg w-30 h-30 object-cover' />
+                        <img src='/IMG_1949-2.png' className='rounded-lg w-30 h-30 object-cover' />
                         <div className='ml-5 h-fit'>
                             <p className='text-xl sm:text-3xl'>Lucas</p>
                             <p className='text-2xl sm:text-4xl font-bold'>Thomassin</p>
@@ -25,7 +25,7 @@ export default function Footer() {
                         <BtnShadow
                             bgColor='#5C1742'
                             borderColor='#FF00E5'
-                            img='/instagram.png'
+                            img='/Instagram.webp'
                             text='Instagram'
                             textColor='#FF00E5'
                             link='https://www.instagram.com/lucsar.tsn/'
@@ -33,7 +33,7 @@ export default function Footer() {
                         <BtnShadow
                             bgColor='#162C42'
                             borderColor='#0037FF'
-                            img='/linkedin.png'
+                            img='/LinkedIn.webp'
                             text='LinkedIn'
                             textColor='#0037FF'
                             link='https://www.linkedin.com/in/lucas-thomassin-7ba03634a/'

@@ -3,6 +3,7 @@ import prisma from '../../../../lib/prisma';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import BtnShadow from '@/app/components/BtnShadow';
+import ImageCarousel from '@/app/components/ImageCarousel';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -43,23 +44,27 @@ export default async function RealisationDetail({ params }: Props) {
         <h1 className="text-5xl font-bold text-neutral-800 dark:text-white mb-4">
           {project.title}
         </h1>
-        
+
+        {project.categories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+                {project.categories.map((category, idx) => (
+                    <span 
+                        key={idx}
+                        className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
+                    >
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </span>
+                ))}
+            </div>
+        )}
+
         <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
           {project.description}
         </p>
 
+        {/* Carousel d'images */}
         {project.images.length > 0 && (
-          <div className="mb-6 space-y-4">
-            {project.images.map((image, index) => (
-              <div key={image.id}>
-                <img 
-                  src={image.url} 
-                  alt={`${project.title} - Image ${index + 1}`}
-                  className="w-full max-w-4xl mx-auto rounded-lg shadow-lg"
-                />
-              </div>
-            ))}
-          </div>
+          <ImageCarousel images={project.images} title={project.title} />
         )}
 
         {project.videoUrl && (
