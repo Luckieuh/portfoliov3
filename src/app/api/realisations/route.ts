@@ -27,7 +27,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, location, imageUrls = [], videoUrl, link, categories } = body;
+    const { title, description, location, imageUrls = [], videoUrl, youtubeUrl, link, categories, createdAt } = body;
 
     if (!title || !description) {
       return NextResponse.json(
@@ -39,14 +39,25 @@ export async function POST(request: NextRequest) {
     // Valider que imageUrls est un tableau
     const urls = Array.isArray(imageUrls) ? imageUrls : [];
 
+    // Valider et parser la date si fournie
+    let projectDate: Date | undefined;
+    if (createdAt) {
+      const parsedDate = new Date(createdAt);
+      if (!isNaN(parsedDate.getTime())) {
+        projectDate = parsedDate;
+      }
+    }
+
     const realisation = await prisma.realisation.create({
       data: {
         title,
         description,
         location: location || null,
         videoUrl: videoUrl || null,
+        youtubeUrl: youtubeUrl || null,
         link: link || null,
         categories: categories || [],
+        ...(projectDate && { createdAt: projectDate }),
         images: {
           create: urls.map((url: string) => ({ url })),
         },

@@ -11,8 +11,10 @@ export default function AdminPage() {
     location: '',
     imageUrls: [] as string[],
     videoUrl: '',
+    youtubeUrl: '',
     link: '',
     categories: [] as string[],
+    createdAt: new Date().toISOString().split('T')[0],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -71,8 +73,10 @@ export default function AdminPage() {
         location: '',
         imageUrls: [],
         videoUrl: '',
+        youtubeUrl: '',
         link: '',
         categories: [],
+        createdAt: new Date().toISOString().split('T')[0],
       });
 
     } catch (error) {
@@ -140,6 +144,20 @@ export default function AdminPage() {
             />
           </div>
 
+          {/* Date de création */}
+          <div>
+            <label htmlFor="createdAt" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              Date de création du projet
+            </label>
+            <input
+              type="date"
+              id="createdAt"
+              value={formData.createdAt}
+              onChange={(e) => setFormData({ ...formData, createdAt: e.target.value })}
+              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+            />
+          </div>
+
           {/* Upload Images multiples */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
@@ -159,6 +177,24 @@ export default function AdminPage() {
                 ✓ Vidéo uploadée: {formData.videoUrl}
               </div>
             )}
+          </div>
+
+          {/* YouTube URL */}
+          <div>
+            <label htmlFor="youtubeUrl" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              Lien YouTube (optionnel)
+            </label>
+            <input
+              type="url"
+              id="youtubeUrl"
+              value={formData.youtubeUrl}
+              onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
+              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              Utilisez le lien complet (https://www.youtube.com/watch?v=ID)
+            </p>
           </div>
 
           {/* Lien */}

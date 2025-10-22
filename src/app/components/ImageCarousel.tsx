@@ -75,7 +75,7 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
   return (
     <div className="mb-8 w-full">
       {/* Carousel principal */}
-      <div className="relative w-full rounded-lg overflow-hidden shadow-lg group">
+      <div className="relative w-full rounded-lg overflow-hidden group">
         {/* Images */}
         <div 
           className="relative w-full aspect-video bg-neutral-900 cursor-pointer"

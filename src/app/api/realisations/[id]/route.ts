@@ -60,7 +60,16 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, location, videoUrl, link, categories } = body;
+    const { title, description, location, videoUrl, youtubeUrl, link, categories, createdAt } = body;
+
+    // Valider et parser la date si fournie
+    let projectDate: Date | undefined;
+    if (createdAt) {
+      const parsedDate = new Date(createdAt);
+      if (!isNaN(parsedDate.getTime())) {
+        projectDate = parsedDate;
+      }
+    }
 
     const realisation = await prisma.realisation.update({
       where: { id: parsedId },
@@ -69,8 +78,10 @@ export async function PUT(
         description,
         location: location || null,
         videoUrl: videoUrl || null,
+        youtubeUrl: youtubeUrl || null,
         link: link || null,
         categories: categories || [],
+        ...(projectDate && { createdAt: projectDate }),
       },
       include: {
         images: true,

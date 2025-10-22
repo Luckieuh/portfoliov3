@@ -4,6 +4,7 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import BtnShadow from '@/app/components/BtnShadow';
 import ImageCarousel from '@/app/components/ImageCarousel';
+import { getYoutubeEmbedUrl } from '@/lib/youtube';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -47,15 +48,30 @@ export default async function RealisationDetail({ params }: Props) {
             <ImageCarousel images={project.images} title={project.title} />
           )}
 
-          {project.videoUrl && (
-          <div className="mb-6">
-            <video 
-              src={project.videoUrl}
-              className="w-full max-w-4xl mx-auto rounded-lg shadow-lg"
-              controls
-            />
-          </div>
-        )}
+          {project.youtubeUrl && (
+            <div className="mb-6 w-full">
+              <div className="relative w-full pt-[56.25%]">
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full rounded-lg"
+                  src={getYoutubeEmbedUrl(project.youtubeUrl) || ''}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+
+          {project.videoUrl && !project.youtubeUrl && (
+            <div className="mb-6">
+              <video 
+                src={project.videoUrl}
+                className="w-full rounded-lg"
+                controls
+              />
+            </div>
+          )}
         </div>
 
 
@@ -103,7 +119,7 @@ export default async function RealisationDetail({ params }: Props) {
                 href={`https://www.google.com/maps/search/${encodeURIComponent(project.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+                className="text-orange-200 hover:text-orange-400 transition-colors"
               >
                 {project.location}
               </a>

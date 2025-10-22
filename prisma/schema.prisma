@@ -21,6 +21,7 @@ model Realisation {
   description String
   location    String?
   videoUrl    String?
+  youtubeUrl  String?
   link        String?
   categories  String[]             @default([])
   images      RealisationImage[]
