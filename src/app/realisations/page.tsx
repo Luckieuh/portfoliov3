@@ -8,7 +8,7 @@ import prisma from '../../../lib/prisma';
 
 export default async function Realisation() {
     // Récupérer les projets depuis la base de données
-    const projectsData = await prisma.realisations.findMany({
+    const projectsData = await prisma.realisation.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
             images: {

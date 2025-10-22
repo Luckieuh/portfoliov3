@@ -4,7 +4,7 @@ import prisma from '../../../../lib/prisma';
 // GET - Récupérer toutes les réalisations avec leurs images
 export async function GET() {
   try {
-    const realisations = await prisma.realisations.findMany({
+    const realisations = await prisma.realisation.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         images: {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Valider que imageUrls est un tableau
     const urls = Array.isArray(imageUrls) ? imageUrls : [];
 
-    const realisation = await prisma.realisations.create({
+    const realisation = await prisma.realisation.create({
       data: {
         title,
         description,

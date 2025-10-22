@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const realisation = await prisma.realisations.findUnique({
+    const realisation = await prisma.realisation.findUnique({
       where: { id: parsedId },
       include: {
         images: {
@@ -62,7 +62,7 @@ export async function PUT(
     const body = await request.json();
     const { title, description, videoUrl, link, categories } = body;
 
-    const realisation = await prisma.realisations.update({
+    const realisation = await prisma.realisation.update({
       where: { id: parsedId },
       data: {
         title,
@@ -102,7 +102,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.realisations.delete({
+    await prisma.realisation.delete({
       where: { id: parsedId },
     });
 

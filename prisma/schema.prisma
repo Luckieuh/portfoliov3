@@ -15,7 +15,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Realisations {
+model Realisation {
   id          Int                  @id @default(autoincrement())
   title       String
   description String
@@ -27,11 +27,11 @@ model Realisations {
 }
 
 model RealisationImage {
-  id             Int          @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   url            String
-  realisation    Realisations @relation(fields: [realisationId], references: [id], onDelete: Cascade)
+  realisation    Realisation @relation(fields: [realisationId], references: [id], onDelete: Cascade)
   realisationId  Int
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime    @default(now())
 }
 
 model admin {
