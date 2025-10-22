@@ -39,7 +39,7 @@ export default async function RealisationDetail({ params }: Props) {
           textColor='#FFFFFF'
           link='/realisations'
         />
-      <div className="flex ">
+      <div className="flex space-x-6">
 
         <div className='w-1/2'>
           {/* Carousel d'images */}
@@ -60,16 +60,16 @@ export default async function RealisationDetail({ params }: Props) {
 
 
         <div className='w-1/2'>
-          <h1 className="text-5xl font-bold text-neutral-800 dark:text-white mb-4">
+          <h1 className="text-5xl font-bold text-neutral-800 dark:text-white mb-4 cursor-default">
             {project.title}
           </h1>
 
           {project.categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-2 mb-2 cursor-default">
                   {project.categories.map((category, idx) => (
                       <span 
                           key={idx}
-                          className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
+                          className="px-3 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
                       >
                           {category.charAt(0).toUpperCase() + category.slice(1)}
                       </span>
@@ -77,9 +77,45 @@ export default async function RealisationDetail({ params }: Props) {
               </div>
           )}
 
-          <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
+          <p className="text-3xl text-neutral-600 dark:text-neutral-300 mb-6 cursor-default">
             {project.description}
           </p>
+
+          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400'>
+            <p className='font-bold'>
+              Date :
+            </p>
+            <p>
+              {project.createdAt.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+              })}
+            </p>
+          </div>
+
+          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400'>
+            <p className='font-bold'>
+              Lieu :
+            </p>
+            <p>
+              {project.createdAt.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+              })}
+            </p>
+          </div>
+
+          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400'>
+            <p className='font-bold'>
+              Lieu :
+            </p>
+            <p>
+              {project.location}
+            </p>
+          </div>
+
         </div>
         
 

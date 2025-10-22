@@ -27,7 +27,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, imageUrls = [], videoUrl, link, categories } = body;
+    const { title, description, location, imageUrls = [], videoUrl, link, categories } = body;
 
     if (!title || !description) {
       return NextResponse.json(
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
+        location: location || null,
         videoUrl: videoUrl || null,
         link: link || null,
         categories: categories || [],

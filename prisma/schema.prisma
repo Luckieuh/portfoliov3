@@ -19,6 +19,7 @@ model Realisation {
   id          Int                  @id @default(autoincrement())
   title       String
   description String
+  location    String?
   videoUrl    String?
   link        String?
   categories  String[]             @default([])

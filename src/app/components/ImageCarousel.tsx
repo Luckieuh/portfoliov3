@@ -103,12 +103,12 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
             {/* Bouton précédent */}
             <button
               onClick={goToPrevious}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
               aria-label="Image précédente"
             >
               <div className="bg-black/50 hover:bg-black/75 transition-colors p-3 m-2 rounded-full">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-5 h-5 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -126,12 +126,12 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
             {/* Bouton suivant */}
             <button
               onClick={goToNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
               aria-label="Image suivante"
             >
               <div className="bg-black/50 hover:bg-black/75 transition-colors p-3 m-2 rounded-full">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-5 h-5 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -165,8 +165,8 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
               onClick={() => goToSlide(index)}
               className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all duration-300 ${
                 index === currentIndex
-                  ? 'ring-2 ring-orange-500 opacity-100'
-                  : 'opacity-60 hover:opacity-80'
+                  ? 'border-2 border-orange-500 opacity-100'
+                  : 'opacity-60 hover:opacity-90'
               }`}
               aria-label={`Aller à l'image ${index + 1}`}
             >

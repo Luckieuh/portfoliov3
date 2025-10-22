@@ -60,13 +60,14 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, videoUrl, link, categories } = body;
+    const { title, description, location, videoUrl, link, categories } = body;
 
     const realisation = await prisma.realisation.update({
       where: { id: parsedId },
       data: {
         title,
         description,
+        location: location || null,
         videoUrl: videoUrl || null,
         link: link || null,
         categories: categories || [],

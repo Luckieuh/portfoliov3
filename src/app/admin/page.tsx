@@ -8,6 +8,7 @@ export default function AdminPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    location: '',
     imageUrls: [] as string[],
     videoUrl: '',
     link: '',
@@ -66,6 +67,7 @@ export default function AdminPage() {
       setFormData({
         title: '',
         description: '',
+        location: '',
         imageUrls: [],
         videoUrl: '',
         link: '',
@@ -119,6 +121,21 @@ export default function AdminPage() {
               rows={4}
               className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
               placeholder="Description de la réalisation"
+            />
+          </div>
+
+          {/* Location */}
+          <div>
+            <label htmlFor="location" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              Localisation (optionnel)
+            </label>
+            <input
+              type="text"
+              id="location"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+              placeholder="Ex: Paris, Île-de-France"
             />
           </div>
 
