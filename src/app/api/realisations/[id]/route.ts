@@ -21,7 +21,10 @@ export async function GET(
       where: { id: parsedId },
       include: {
         images: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: [
+            { position: 'asc' },
+            { createdAt: 'asc' },
+          ],
         },
       },
     });
@@ -59,8 +62,8 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
-    const { title, description, location, videoUrl, youtubeUrl, link, categories, createdAt } = body;
+  const body = await request.json();
+  const { title, description, location, videoUrl, youtubeUrl, link, categories, createdAt, imageUrls = [] } = body;
 
     // Valider et parser la date si fournie
     let projectDate: Date | undefined;
@@ -71,24 +74,39 @@ export async function PUT(
       }
     }
 
-    const realisation = await prisma.realisation.update({
+    // We'll update the main fields, remove existing images and recreate images in the requested order.
+    // This keeps ordering simple: client sends ordered array of image URLs (existing and/or new) as imageUrls.
+
+    const updateData: any = {
+      title,
+      description,
+      location: location || null,
+      videoUrl: videoUrl || null,
+      youtubeUrl: youtubeUrl || null,
+      link: link || null,
+      categories: categories || [],
+      ...(projectDate && { createdAt: projectDate }),
+    };
+
+    // Use a transaction: update fields, delete old images, then create new images with positions
+    await prisma.$transaction([
+      prisma.realisation.update({ where: { id: parsedId }, data: updateData }),
+      prisma.realisationImage.deleteMany({ where: { realisationId: parsedId } }),
+      // recreate images in requested order
+      prisma.realisationImage.createMany({
+        data: imageUrls.map((url: string, idx: number) => ({ url, realisationId: parsedId, position: idx }))
+      })
+    ]);
+
+    // Fetch and return the updated realisation with ordered images
+    const updated = await prisma.realisation.findUnique({
       where: { id: parsedId },
-      data: {
-        title,
-        description,
-        location: location || null,
-        videoUrl: videoUrl || null,
-        youtubeUrl: youtubeUrl || null,
-        link: link || null,
-        categories: categories || [],
-        ...(projectDate && { createdAt: projectDate }),
-      },
       include: {
-        images: true,
+        images: { orderBy: [ { position: 'asc' }, { createdAt: 'asc' } ] },
       },
     });
 
-    return NextResponse.json(realisation);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error);
     return NextResponse.json(

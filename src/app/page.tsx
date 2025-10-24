@@ -15,16 +15,34 @@ const socialItems = [
 ];
 
 export default async function Home() {
-  // Récupérer les 3 dernières réalisations
-  const realisations = await prisma.realisation.findMany({
-    take: 3,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      images: {
-        orderBy: { createdAt: 'asc' },
-      },
-    },
-  });
+    // Récupérer les 3 dernières réalisations
+    let realisations = [];
+    try {
+        realisations = await prisma.realisation.findMany({
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                images: {
+                    orderBy: { createdAt: 'asc' },
+                },
+            },
+        });
+    } catch (err) {
+        // Si la DB est indisponible, on affiche une UI de secours lisible
+        console.error('Prisma DB error on homepage:', err);
+        return (
+            <div className="w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
+                <div className="max-w-2xl text-center p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+                    <h2 className="text-2xl font-bold mb-4">Impossible de charger les réalisations</h2>
+                    <p className="mb-4 text-neutral-600 dark:text-neutral-300">La connexion à la base de données est indisponible pour le moment. Vérifiez votre configuration ou réessayez plus tard.</p>
+                    <div className="flex justify-center gap-4">
+                        <a href="/realisations" className="px-4 py-2 rounded bg-orange-500 text-white">Réessayer</a>
+                        <a href="/a-propos" className="px-4 py-2 rounded border">Contact</a>
+                    </div>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="w-full min-h-screen overflow-hidden bg-white dark:bg-neutral-900">
                     <div className="relative w-full">
@@ -73,11 +91,11 @@ export default async function Home() {
                         </div>
 
                         {/* Section principale avec l'image et le texte */}
-                        <div className='relative w-full md:h-[35vh] bg-neutral-300 dark:bg-black flex justify-center items-start md:items-end flex-col md:flex-row pt-3 pb-6'>
+                        <div className='relative w-full lg:h-[40vh] bg-neutral-300 dark:bg-black flex justify-center items-start flex-col md:flex-row pt-3 pb-6'>
                             <div className='z-10 h-full flex justify-center w-full md:w-auto py-8 md:py-0'> 
                                 <img src='/IMG_1949-2.png' alt='Lucas Thomassin' className='object-cover md:h-full rounded-xl md:mr-5 h-[60%] w-[80%]' />
                             </div>
-                            <div className='z-10 flex flex-col justify-between h-full md:ml-6 md:px-0 mr-5 w-[80%] md:w-auto relative md:left-0 left-[50%] md:translate-x-0 translate-x-[-50%]'>
+                            <div className='z-10 flex h-full flex-col justify-between md:ml-6 md:px-0 mr-5 w-[80%] md:w-auto relative md:left-0 left-[50%] md:translate-x-0 translate-x-[-50%]'>
                                 <div> 
                                     <h1 className='text-4xl text-black dark:text-white font-medium'>Lucas</h1>
                                     <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>

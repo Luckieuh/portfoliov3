@@ -8,7 +8,11 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         images: {
-          orderBy: { createdAt: 'asc' },
+          // Order images first by explicit position (new), then by createdAt for backwards compatibility
+          orderBy: [
+            { position: 'asc' },
+            { createdAt: 'asc' },
+          ],
         },
       },
     });
@@ -59,7 +63,8 @@ export async function POST(request: NextRequest) {
         categories: categories || [],
         ...(projectDate && { createdAt: projectDate }),
         images: {
-          create: urls.map((url: string) => ({ url })),
+          // create images and set their position according to the array index
+          create: urls.map((url: string, idx: number) => ({ url, position: idx })),
         },
       },
       include: {

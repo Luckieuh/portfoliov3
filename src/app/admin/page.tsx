@@ -1,259 +1,174 @@
 'use client';
 
-import { useState } from 'react';
-import MultiImageUpload from '@/app/components/MultiImageUpload';
-import ImageUpload from '@/app/components/ImageUpload';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trash2, Edit, LogOut, Plus } from 'lucide-react';
+
+interface Realisation {
+  id: number;
+  title: string;
+  description: string;
+  location?: string;
+  images?: { url: string }[];
+  videoUrl?: string;
+  youtubeUrl?: string;
+  link?: string;
+  categories: string[];
+  createdAt: string;
+}
 
 export default function AdminPage() {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    location: '',
-    imageUrls: [] as string[],
-    videoUrl: '',
-    youtubeUrl: '',
-    link: '',
-    categories: [] as string[],
-    createdAt: new Date().toISOString().split('T')[0],
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const [realisations, setRealisations] = useState<Realisation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const availableCategories = ['photo', 'video', 'design', 'voyage', 'architecture'];
+  useEffect(() => {
+    loadRealisations();
+  }, []);
 
-  const handleCategoryToggle = (category: string) => {
-    setFormData(prev => ({
-      ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
-    }));
+  const loadRealisations = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/realisations');
+      if (!response.ok) throw new Error('Erreur lors du chargement');
+      const data = await response.json();
+      setRealisations(data);
+    } catch (error) {
+      console.error('Erreur:', error);
+      setMessage({ type: 'error', text: 'Erreur lors du chargement des réalisations' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleImagesChange = (urls: string[]) => {
-    setFormData(prev => ({ ...prev, imageUrls: urls }));
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
-  const handleVideoUpload = (result: string | string[]) => {
-    const url = Array.isArray(result) ? result[0] : result;
-    setFormData(prev => ({ ...prev, videoUrl: url }));
-    setMessage({ type: 'success', text: 'Vidéo uploadée avec succès!' });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage(null);
+  const handleDelete = async (id: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) return;
 
     try {
-      if (formData.imageUrls.length === 0) {
-        throw new Error('Veuillez ajouter au moins une image');
-      }
-
-      const response = await fetch('/api/realisations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const response = await fetch(`/api/realisations/${id}`, {
+        method: 'DELETE',
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la création');
-      }
+      if (!response.ok) throw new Error('Erreur lors de la suppression');
 
-      const data = await response.json();
-      setMessage({ type: 'success', text: 'Réalisation créée avec succès!' });
-      
-      // Réinitialiser le formulaire
-      setFormData({
-        title: '',
-        description: '',
-        location: '',
-        imageUrls: [],
-        videoUrl: '',
-        youtubeUrl: '',
-        link: '',
-        categories: [],
-        createdAt: new Date().toISOString().split('T')[0],
-      });
-
+      setMessage({ type: 'success', text: 'Projet supprimé avec succès!' });
+      loadRealisations();
     } catch (error) {
-      setMessage({ 
-        type: 'error', 
-        text: error instanceof Error ? error.message : 'Erreur lors de la création' 
-      });
-    } finally {
-      setIsSubmitting(false);
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la suppression' });
     }
   };
 
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-neutral-800 dark:text-white mb-8">
-          Administration - Nouvelle Réalisation
-        </h1>
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-neutral-800 dark:text-white">
+            Administration
+          </h1>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            <LogOut size={18} />
+            Déconnexion
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-lg">
-          {/* Titre */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Titre *
-            </label>
-            <input
-              type="text"
-              id="title"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-              placeholder="Titre de la réalisation"
-            />
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-neutral-800 dark:text-white">
+              Réalisations ({realisations.length})
+            </h2>
+            <button
+              onClick={() => router.push('/admin/edit/new')}
+              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            >
+              <Plus size={18} />
+              Nouveau Projet
+            </button>
           </div>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Description *
-            </label>
-            <textarea
-              id="description"
-              required
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={4}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-              placeholder="Description de la réalisation"
-            />
-          </div>
-
-          {/* Location */}
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Localisation (optionnel)
-            </label>
-            <input
-              type="text"
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-              placeholder="Ex: Paris, Île-de-France"
-            />
-          </div>
-
-          {/* Date de création */}
-          <div>
-            <label htmlFor="createdAt" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Date de création du projet
-            </label>
-            <input
-              type="date"
-              id="createdAt"
-              value={formData.createdAt}
-              onChange={(e) => setFormData({ ...formData, createdAt: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-            />
-          </div>
-
-          {/* Upload Images multiples */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Images * (vous pouvez ajouter plusieurs images)
-            </label>
-            <MultiImageUpload onImagesChange={handleImagesChange} />
-          </div>
-
-          {/* Upload Video */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Vidéo (optionnel)
-            </label>
-            <ImageUpload onUploadSuccess={handleVideoUpload} accept="video/*" />
-            {formData.videoUrl && (
-              <div className="mt-2 p-2 bg-green-100 border border-green-400 text-green-700 rounded">
-                ✓ Vidéo uploadée: {formData.videoUrl}
-              </div>
-            )}
-          </div>
-
-          {/* YouTube URL */}
-          <div>
-            <label htmlFor="youtubeUrl" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Lien YouTube (optionnel)
-            </label>
-            <input
-              type="url"
-              id="youtubeUrl"
-              value={formData.youtubeUrl}
-              onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-              placeholder="https://www.youtube.com/watch?v=..."
-            />
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              Utilisez le lien complet (https://www.youtube.com/watch?v=ID)
-            </p>
-          </div>
-
-          {/* Lien */}
-          <div>
-            <label htmlFor="link" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Lien (optionnel)
-            </label>
-            <input
-              type="url"
-              id="link"
-              value={formData.link}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-              placeholder="https://..."
-            />
-          </div>
-
-          {/* Catégories */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Catégories
-            </label>
-            <div className="flex flex-wrap gap-3">
-              {availableCategories.map((category) => (
-                <label key={category} className="inline-flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.categories.includes(category)}
-                    onChange={() => handleCategoryToggle(category)}
-                    className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer"
-                  />
-                  <span className="text-neutral-700 dark:text-neutral-300 capitalize">
-                    {category}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Message */}
           {message && (
-            <div className={`p-4 rounded ${
-              message.type === 'success' 
-                ? 'bg-green-100 border border-green-400 text-green-700' 
-                : 'bg-red-100 border border-red-400 text-red-700'
-            }`}>
+            <div
+              className={`mb-6 p-4 rounded ${
+                message.type === 'success'
+                  ? 'bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-100'
+                  : 'bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-100'
+              }`}
+            >
               {message.text}
             </div>
           )}
 
-          {/* Bouton Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Création en cours...' : 'Créer la réalisation'}
-          </button>
-        </form>
+          {isLoading ? (
+            <div className="text-center py-8 text-neutral-600 dark:text-neutral-400">
+              Chargement des réalisations...
+            </div>
+          ) : realisations.length === 0 ? (
+            <div className="text-center py-8 text-neutral-600 dark:text-neutral-400">
+              Aucune réalisation. Commencez par en créer une !
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {realisations.map((realisation) => (
+                <div
+                  key={realisation.id}
+                  className="border border-neutral-300 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition flex justify-between items-start"
+                >
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-neutral-800 dark:text-white text-lg">
+                      {realisation.title}
+                    </h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2">
+                      {realisation.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {realisation.categories.map((cat) => (
+                        <span
+                          key={cat}
+                          className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-100 px-2 py-1 rounded"
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                    {realisation.images && realisation.images.length > 0 && (
+                      <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-2">
+                        📷 {realisation.images.length} image(s)
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2 ml-4 flex-shrink-0">
+                    <button
+                      onClick={() => router.push(`/admin/edit/${realisation.id}`)}
+                      className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded transition"
+                      title="Éditer"
+                    >
+                      <Edit size={20} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(realisation.id)}
+                      className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded transition"
+                      title="Supprimer"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

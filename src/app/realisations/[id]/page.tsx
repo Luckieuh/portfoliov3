@@ -40,9 +40,9 @@ export default async function RealisationDetail({ params }: Props) {
           textColor='#FFFFFF'
           link='/realisations'
         />
-      <div className="flex space-x-6">
+      <div className="flex flex-col lg:flex-row justify-center w-full space-x-6">
 
-        <div className='w-1/2'>
+        <div className='w-1/2 flex justify-center w-full'>
           {/* Lecteur YouTube (prioritaire et unique) */}
           {project.youtubeUrl && (
             <div className="mb-6 w-full">
@@ -77,7 +77,7 @@ export default async function RealisationDetail({ params }: Props) {
         </div>
 
 
-        <div className='w-1/2'>
+        <div className='w-1/2 flex-col w-full'>
           <h1 className="text-5xl font-bold text-neutral-800 dark:text-white mb-4 cursor-default">
             {project.title}
           </h1>
@@ -99,7 +99,7 @@ export default async function RealisationDetail({ params }: Props) {
             {project.description}
           </p>
 
-          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400 mb-4'>
+          <div className='flex w-full lg:w-[75%] justify-between text-2xl border-b border-orange-400 mb-4'>
             <p className='font-bold'>
               Date :
             </p>
@@ -112,7 +112,7 @@ export default async function RealisationDetail({ params }: Props) {
             </p>
           </div>
 
-          <div className='flex w-[75%] justify-between text-2xl border-b border-orange-400 mb-4'>
+          <div className='flex w-full lg:w-[75%] justify-between text-2xl border-b border-orange-400 mb-4'>
             <p className='font-bold'>
               Lieu :
             </p>
@@ -151,8 +151,10 @@ export default async function RealisationDetail({ params }: Props) {
 
       </div>
 
+    </div>
+    <div className='relative w-full bottom-0'>
       <Footer />
     </div>
-    </div>
+  </div>
   );
 }

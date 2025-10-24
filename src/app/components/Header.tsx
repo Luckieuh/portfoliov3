@@ -34,7 +34,7 @@ function NavLink({ href, children, isActive }: NavLinkProps) {
     >
       {children}
       {isActive && (
-        <span className="box-shadow-glow-orange absolute bottom-0 w-full left-0 translate-x-1/2 h-[3px] bg-orange-400 rounded-full animate-fadeIn"></span>
+      <span className="box-shadow-glow-orange absolute bottom-0 w-[90%] left-[5%] translate-x-1/2 h-[3px] bg-orange-400 rounded-full animate-fadeIn"></span>
       )}
     </a>
   );
@@ -45,8 +45,10 @@ export default function Header() {
     return (
         <header>
             <div className="absolute top-0 h-[10vh] left-0 right-0 flex justify-between items-center p-4 z-50">
+              <a href="/">
                 <img src="/white-logo.png" alt="Logo" className="hidden md:flex absolute top-2 w-16 h-16 hover:cursor-pointer" />
                 <img src="/dark-logo.png" alt="Logo" className="dark:hidden md:flex absolute top-2 w-16 h-16 hover:cursor-pointer" />
+              </a>
             <nav>
                 <div className="sm:flex md:hidden">
                     <StaggeredMenu
@@ -66,7 +68,7 @@ export default function Header() {
                         isFixed={true}
                     />
                 </div>
-                <div className="hidden md:flex absolute top-2 right-5 gap-6 items-center">
+                <div className="hidden md:flex absolute top-2 right-5 gap-4 items-center">
                     <NavLink href="/" isActive={pathname === '/'}>
                       Accueil
                     </NavLink>
