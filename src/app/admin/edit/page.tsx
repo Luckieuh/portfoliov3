@@ -38,6 +38,25 @@ export default function EditRealisationPage() {
     console.log('IsEditing:', isEditing);
   }, [params]);
 
+  // Charger les catégories disponibles
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableCategories(data.map((cat: { name: string }) => cat.name));
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des catégories:', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    loadCategories();
+  }, []);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -59,8 +78,8 @@ export default function EditRealisationPage() {
   const [draggedImageId, setDraggedImageId] = useState<number | null>(null);
   const [draggedNewImageIndex, setDraggedNewImageIndex] = useState<number | null>(null);
   const [dragType, setDragType] = useState<'existing' | 'new' | null>(null);
-
-  const availableCategories = ['photo', 'video', 'design', 'voyage', 'architecture'];
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   // Charger les données si édition
   useEffect(() => {

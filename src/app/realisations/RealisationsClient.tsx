@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { getYoutubeThumbnail } from '@/lib/youtube';
 
@@ -20,33 +20,57 @@ type RealisationsClientProps = {
   projects: Project[];
 };
 
+type CategoryFilter = {
+  [key: string]: boolean;
+};
+
 export default function RealisationsClient({ projects }: RealisationsClientProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('Plus récent');
     const [searchQuery, setSearchQuery] = useState('');
-    const [checkedFilters, setCheckedFilters] = useState({
-        photo: false,
-        video: false,
-        design: false,
-        voyage: false,
-        architecture: false
-    });
+    const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+    const [checkedFilters, setCheckedFilters] = useState<CategoryFilter>({});
+    const [loadingCategories, setLoadingCategories] = useState(true);
+
+    // Charger les catégories depuis l'API
+    useEffect(() => {
+      const loadCategories = async () => {
+        try {
+          setLoadingCategories(true);
+          const response = await fetch('/api/categories');
+          if (response.ok) {
+            const data = await response.json();
+            const categoryNames = data.map((cat: { name: string }) => cat.name);
+            setAvailableCategories(categoryNames);
+            // Initialiser les filtres avec toutes les catégories à false
+            const initialFilters: CategoryFilter = {};
+            categoryNames.forEach((cat: string) => {
+              initialFilters[cat] = false;
+            });
+            setCheckedFilters(initialFilters);
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement des catégories:', error);
+        } finally {
+          setLoadingCategories(false);
+        }
+      };
+      loadCategories();
+    }, []);
 
     // Fonction de réinitialisation
     const handleReset = () => {
         setSelectedCategory('Plus récent');
         setSearchQuery('');
-        setCheckedFilters({
-            photo: false,
-            video: false,
-            design: false,
-            voyage: false,
-            architecture: false
+        const resetFilters: CategoryFilter = {};
+        availableCategories.forEach((cat) => {
+          resetFilters[cat] = false;
         });
+        setCheckedFilters(resetFilters);
     };
 
     // Fonction pour gérer les changements de checkbox
-    const handleCheckboxChange = (filter: keyof typeof checkedFilters) => {
+    const handleCheckboxChange = (filter: string) => {
         setCheckedFilters(prev => ({
             ...prev,
             [filter]: !prev[filter]
@@ -198,51 +222,20 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                     <div className='w-full flex flex-col md:flex-row justify-between items-start gap-4'>
                         {/* Liste de checkboxes */}
                         <div className="flex flex-wrap gap-4">
-                            <label className="inline-flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    checked={checkedFilters.photo}
-                                    onChange={() => handleCheckboxChange('photo')}
-                                    className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer" 
-                                />
-                                <span className="text-neutral-700 dark:text-neutral-300">Photo</span>
-                            </label>
-                            <label className="inline-flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    checked={checkedFilters.video}
-                                    onChange={() => handleCheckboxChange('video')}
-                                    className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer" 
-                                />
-                                <span className="text-neutral-700 dark:text-neutral-300">Vidéo</span>
-                            </label>
-                            <label className="inline-flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    checked={checkedFilters.design}
-                                    onChange={() => handleCheckboxChange('design')}
-                                    className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer" 
-                                />
-                                <span className="text-neutral-700 dark:text-neutral-300">Design</span>
-                            </label>
-                            <label className="inline-flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    checked={checkedFilters.voyage}
-                                    onChange={() => handleCheckboxChange('voyage')}
-                                    className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer" 
-                                />
-                                <span className="text-neutral-700 dark:text-neutral-300">Voyage</span>
-                            </label>
-                            <label className="inline-flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    checked={checkedFilters.architecture}
-                                    onChange={() => handleCheckboxChange('architecture')}
-                                    className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer" 
-                                />
-                                <span className="text-neutral-700 dark:text-neutral-300">Architecture</span>
-                            </label>
+                            {loadingCategories ? (
+                                <p className="text-neutral-600 dark:text-neutral-400">Chargement des catégories...</p>
+                            ) : availableCategories.map((category) => (
+                                <label key={category} className="inline-flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={checkedFilters[category] || false}
+                                        onChange={() => handleCheckboxChange(category)}
+                                        className="w-5 h-5 appearance-none border-2 border-orange-500 rounded cursor-pointer checked:bg-orange-500 checked:border-orange-500 transition-colors" 
+                                        style={{ padding: '3px', boxSizing: 'border-box', backgroundClip: 'content-box' }}
+                                    />
+                                    <span className="text-neutral-700 dark:text-neutral-300 capitalize">{category}</span>
+                                </label>
+                            ))}
                         </div>
                         
                         {/* Bouton Réinitialiser */}
@@ -263,7 +256,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                         ) : (
                             filteredAndSortedProjects.map((project) => (
                                 <Link key={project.id} href={`/realisations/${project.id}`} className="block group">
-                                    <div className="overflow-hidden rounded-lg cursor-pointer transition-all duration-300">
+                                    <div className="overflow-hidden bg-neutral-800 rounded-lg cursor-pointer transition-all duration-300">
                                         <div className="relative w-full aspect-video rounded-xl overflow-hidden">
                                             {/* Miniature YouTube (prioritaire) */}
                                             {project.youtubeUrl && (
@@ -290,17 +283,63 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                             {/* Images (si pas de YouTube) */}
                                             {!project.youtubeUrl && project.images.length > 0 && (
                                                 <>
-                                                    <div 
-                                                        className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
-                                                        style={{ backgroundImage: `url('${project.images[0].url}')` }}
-                                                    ></div>
-                                                    <div className="relative w-full h-full flex items-center justify-center">
-                                                        <img 
-                                                            src={project.images[0].url} 
-                                                            alt={project.title} 
-                                                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                                                        />
-                                                    </div>
+                                                    {/* Cas 1: Une seule image avec flou en arrière-plan */}
+                                                    {project.images.length === 1 && (
+                                                        <>
+                                                            <div 
+                                                                className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                                                                style={{ backgroundImage: `url('${project.images[0].url}')` }}
+                                                            ></div>
+                                                            <div className="relative w-full h-full flex items-center justify-center">
+                                                                <img 
+                                                                    src={project.images[0].url} 
+                                                                    alt={project.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    {/* Cas 2: Deux images */}
+                                                    {project.images.length === 2 && (
+                                                        <div className="relative w-full h-full grid grid-cols-2 gap-1">
+                                                            {project.images.map((img) => (
+                                                                <div key={img.id} className="relative flex items-center justify-center bg-neutral-900">
+                                                                    <img 
+                                                                        src={img.url} 
+                                                                        alt={project.title} 
+                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Cas 3: Trois ou plus images - Layout 1x2 (1 à gauche, 2 à droite en colonne) */}
+                                                    {project.images.length >= 3 && (
+                                                        <div className="relative w-full h-full grid grid-cols-3 gap-1">
+                                                            {/* Image gauche prenant toute la hauteur */}
+                                                            <div className="col-span-2 row-span-2 relative flex items-center justify-center bg-neutral-900">
+                                                                <img 
+                                                                    src={project.images[0].url} 
+                                                                    alt={project.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                            </div>
+                                                            {/* Colonne droite avec 2 images en hauteur */}
+                                                            <div className="col-span-1 row-span-2 flex flex-col gap-1">
+                                                                {project.images.slice(1, 3).map((img) => (
+                                                                    <div key={img.id} className="relative flex-1 flex items-center justify-center bg-neutral-900">
+                                                                        <img 
+                                                                            src={img.url} 
+                                                                            alt={project.title} 
+                                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
                                             {/* Vidéo uploadée (si pas de YouTube et pas d'images) */}
@@ -314,22 +353,37 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                             )}
                                         </div>
                                         
-                                        <div className="mt-2 p-2">
-                                            <h3 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
+                                        <div className="p-1">
+                                            <h3 className="text-2xl font-bold text-neutral-800 dark:text-white group-hover:text-orange-500 transition-colors">
                                                 {project.title}
                                             </h3>
-                                            {project.categories.length > 0 && (
-                                                <div className="flex flex-wrap gap-2 mb-2">
-                                                    {project.categories.map((category, idx) => (
-                                                        <span 
-                                                            key={idx}
-                                                            className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
-                                                        >
-                                                            {category.charAt(0).toUpperCase() + category.slice(1)}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            <p>
+                                                {project.description.length > 100
+                                                    ? project.description.slice(0, 100) + '...'
+                                                    : project.description
+                                                }
+                                            </p>
+                                            <div className="flex items-center justify-between gap-2 mt-3">
+                                                {project.categories.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {project.categories.map((category, idx) => (
+                                                            <span 
+                                                                key={idx}
+                                                                className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
+                                                            >
+                                                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                <span className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                                                    {new Date(project.createdAt).toLocaleDateString('fr-FR', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                    })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -373,17 +427,63 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                         {/* Images (si pas de YouTube) */}
                                         {!latestProject.youtubeUrl && latestProject.images.length > 0 && (
                                             <>
-                                                <div 
-                                                    className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
-                                                    style={{ backgroundImage: `url('${latestProject.images[0].url}')` }}
-                                                ></div>
-                                                <div className="relative w-full h-full flex items-center justify-center">
-                                                    <img 
-                                                        src={latestProject.images[0].url} 
-                                                        alt={latestProject.title} 
-                                                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                    />
-                                                </div>
+                                                {/* Cas 1: Une seule image avec flou en arrière-plan */}
+                                                {latestProject.images.length === 1 && (
+                                                    <>
+                                                        <div 
+                                                            className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                                                            style={{ backgroundImage: `url('${latestProject.images[0].url}')` }}
+                                                        ></div>
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <img 
+                                                                src={latestProject.images[0].url} 
+                                                                alt={latestProject.title} 
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                            />
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                {/* Cas 2: Deux images */}
+                                                {latestProject.images.length === 2 && (
+                                                    <div className="relative w-full h-full grid grid-cols-2 gap-1">
+                                                        {latestProject.images.map((img) => (
+                                                            <div key={img.id} className="relative flex items-center justify-center bg-neutral-900">
+                                                                <img 
+                                                                    src={img.url} 
+                                                                    alt={latestProject.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Cas 3: Trois ou plus images - Layout 2x1 (2 à gauche en colonne, 1 à droite) */}
+                                                {latestProject.images.length >= 3 && (
+                                                    <div className="relative w-full h-full grid grid-cols-3 gap-1">
+                                                        {/* Colonne gauche avec 2 images en hauteur */}
+                                                        <div className="col-span-1 row-span-2 flex flex-col gap-1">
+                                                            {latestProject.images.slice(0, 2).map((img) => (
+                                                                <div key={img.id} className="relative flex-1 flex items-center justify-center bg-neutral-900">
+                                                                    <img 
+                                                                        src={img.url} 
+                                                                        alt={latestProject.title} 
+                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        {/* Image droite prenant toute la hauteur */}
+                                                        <div className="col-span-2 row-span-2 relative flex items-center justify-center bg-neutral-900">
+                                                            <img 
+                                                                src={latestProject.images[2].url} 
+                                                                alt={latestProject.title} 
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </>
                                         )}
                                     </div>

@@ -119,6 +119,16 @@ export default function AdminPage() {
           </button>
         </div>
 
+        {/* Bouton de gestion des catégories */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/admin/categories')}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            ⚙️ Gérer les catégories
+          </button>
+        </div>
+
         <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-neutral-800 dark:text-white">
