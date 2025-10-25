@@ -176,3 +176,13 @@
       flex: 0 0 100%;
   }
 }
+
+/* Masquer les scrollbars verticales mais garder le défilement */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

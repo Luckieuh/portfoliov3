@@ -21,6 +21,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Important: inclure les cookies
         body: JSON.stringify({ username, password }),
       });
 
@@ -29,7 +30,8 @@ export default function LoginPage() {
         throw new Error(data.error || 'Authentification échouée');
       }
 
-      // Rediriger vers la page admin
+      // Attendre un peu puis rediriger vers la page admin
+      await new Promise(resolve => setTimeout(resolve, 500));
       router.push('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -46,7 +48,7 @@ export default function LoginPage() {
             Connexion Admin
           </h1>
           <p className="text-center text-neutral-600 dark:text-neutral-400 mb-8">
-            Accédez au tableau de bord
+            Accéder au tableau de bord
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -98,11 +100,6 @@ export default function LoginPage() {
               {isLoading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-neutral-300 dark:border-neutral-600 text-center text-sm text-neutral-600 dark:text-neutral-400">
-            <p>Identifiant de démo : admin</p>
-            <p>Mot de passe de démo : admin123</p>
-          </div>
         </div>
       </div>
     </div>

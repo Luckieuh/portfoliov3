@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken, getTokenFromCookie } from './src/lib/auth';
+
+function getTokenFromCookie(cookieHeader?: string): string | null {
+  if (!cookieHeader) return null;
+  const cookies = cookieHeader.split(';').map(c => c.trim());
+  const authCookie = cookies.find(c => c.startsWith('auth='));
+  if (!authCookie) return null;
+  return authCookie.split('=')[1];
+}
 
 export function middleware(request: NextRequest) {
   // Protéger les routes /admin
   if (request.nextUrl.pathname.startsWith('/admin')) {
     const token = getTokenFromCookie(request.headers.get('cookie') || '');
     
-    if (!token || !verifyToken(token)) {
-      // Rediriger vers la page de login
+    if (!token) {
+      // Rediriger vers la page de login si pas de token
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
@@ -17,7 +24,7 @@ export function middleware(request: NextRequest) {
       (request.nextUrl.pathname.startsWith('/api/realisations') && request.method !== 'GET')) {
     const token = getTokenFromCookie(request.headers.get('cookie') || '');
     
-    if (!token || !verifyToken(token)) {
+    if (!token) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -29,5 +36,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/realisations/:path*'],
+  matcher: ['/admin', '/admin/:path*', '/api/admin/:path*', '/api/realisations/:path*'],
 };

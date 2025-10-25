@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import MultiImageUpload from '@/app/components/MultiImageUpload';
 import ImageUpload from '@/app/components/ImageUpload';
-import { ArrowLeft, Trash2, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RealisationImage {
   id: number;
@@ -31,6 +31,13 @@ export default function EditRealisationPage() {
   const realisationId = params?.id ? (Array.isArray(params.id) ? params.id[0] : params.id) : null;
   const isEditing = !!realisationId && realisationId !== 'new';
 
+  // Debug
+  useEffect(() => {
+    console.log('Params:', params);
+    console.log('RealisationId:', realisationId);
+    console.log('IsEditing:', isEditing);
+  }, [params]);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -49,6 +56,9 @@ export default function EditRealisationPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
   const [imageOrder, setImageOrder] = useState<number[]>([]);
+  const [draggedImageId, setDraggedImageId] = useState<number | null>(null);
+  const [draggedNewImageIndex, setDraggedNewImageIndex] = useState<number | null>(null);
+  const [dragType, setDragType] = useState<'existing' | 'new' | null>(null);
 
   const availableCategories = ['photo', 'video', 'design', 'voyage', 'architecture'];
 
@@ -62,16 +72,23 @@ export default function EditRealisationPage() {
   const loadRealisation = async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching realisation:', realisationId);
       const response = await fetch(`/api/realisations/${realisationId}`);
-      if (!response.ok) throw new Error('Erreur lors du chargement');
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Error data:', errorData);
+        throw new Error(errorData.error || 'Erreur lors du chargement');
+      }
 
       const data: Realisation = await response.json();
+      console.log('Loaded data:', data);
       
       setFormData({
         title: data.title,
         description: data.description,
         location: data.location || '',
-        imageUrls: data.images.map(img => img.url),
+        imageUrls: [], // Les images existantes ne vont pas ici
         videoUrl: data.videoUrl || '',
         youtubeUrl: data.youtubeUrl || '',
         link: data.link || '',
@@ -80,7 +97,9 @@ export default function EditRealisationPage() {
       });
       setExistingImages(data.images);
       setImageOrder(data.images.map(img => img.id));
+      console.log('Form loaded successfully');
     } catch (error) {
+      console.error('Error loading realisation:', error);
       setMessage({ type: 'error', text: 'Erreur lors du chargement du projet' });
     } finally {
       setIsLoading(false);
@@ -93,17 +112,106 @@ export default function EditRealisationPage() {
     setImageOrder(imageOrder.filter(id => id !== imageId));
   };
 
-  const handleMoveImage = (imageId: number, direction: 'up' | 'down') => {
+  const handleMoveImage = (imageId: number, direction: 'left' | 'right') => {
+    console.log('Moving image:', imageId, 'Direction:', direction);
     const currentIndex = imageOrder.indexOf(imageId);
+    console.log('Current index:', currentIndex, 'ImageOrder:', imageOrder);
     const newOrder = [...imageOrder];
     
-    if (direction === 'up' && currentIndex > 0) {
+    if (direction === 'left' && currentIndex > 0) {
       [newOrder[currentIndex], newOrder[currentIndex - 1]] = [newOrder[currentIndex - 1], newOrder[currentIndex]];
-    } else if (direction === 'down' && currentIndex < newOrder.length - 1) {
+      console.log('After left swap:', newOrder);
+    } else if (direction === 'right' && currentIndex < newOrder.length - 1) {
       [newOrder[currentIndex], newOrder[currentIndex + 1]] = [newOrder[currentIndex + 1], newOrder[currentIndex]];
+      console.log('After right swap:', newOrder);
+    } else if (direction === 'right' && currentIndex === newOrder.length - 1 && formData.imageUrls.length > 0) {
+      // Déplacer vers les images nouvelles
+      const draggedImage = existingImages.find(img => img.id === imageId);
+      if (draggedImage) {
+        setImageOrder(newOrder.filter(id => id !== imageId));
+        setFormData({ ...formData, imageUrls: [draggedImage.url, ...formData.imageUrls] });
+      }
+      return;
+    } else {
+      console.log('Move not possible - boundary reached');
     }
     
     setImageOrder(newOrder);
+  };
+
+  const handleMoveNewImage = (index: number, direction: 'left' | 'right') => {
+    const newUrls = [...formData.imageUrls];
+    
+    if (direction === 'left' && index > 0) {
+      [newUrls[index], newUrls[index - 1]] = [newUrls[index - 1], newUrls[index]];
+    } else if (direction === 'right' && index < newUrls.length - 1) {
+      [newUrls[index], newUrls[index + 1]] = [newUrls[index + 1], newUrls[index]];
+    } else if (direction === 'left' && index === 0 && getOrderedExistingImages().length > 0) {
+      // Déplacer vers les images existantes
+      const draggedUrl = newUrls[index];
+      setFormData({ ...formData, imageUrls: newUrls.filter((_, i) => i !== index) });
+      
+      // Trouver l'ID correspondant dans existingImages ou créer une nouvelle entrée
+      const lastExistingIndex = imageOrder.length - 1;
+      setImageOrder([...imageOrder, draggedUrl as any]);
+      return;
+    } else {
+      return;
+    }
+    
+    setFormData({ ...formData, imageUrls: newUrls });
+  };
+
+  // Drag and drop functions
+  const handleDragStartExisting = (e: React.DragEvent, imageId: number) => {
+    setDraggedImageId(imageId);
+    setDragType('existing');
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOverExisting = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropExisting = (e: React.DragEvent, targetImageId: number) => {
+    e.preventDefault();
+    
+    // Si on drop une image nouvelle sur une existante
+    if (dragType === 'new' && draggedNewImageIndex !== null) {
+      const draggedUrl = formData.imageUrls[draggedNewImageIndex];
+      const targetIndex = imageOrder.indexOf(targetImageId);
+      
+      if (targetIndex === -1) return;
+      
+      // Ajouter l'image aux existantes (virtuellement dans l'ordre)
+      const newImageUrls = formData.imageUrls.filter((_, i) => i !== draggedNewImageIndex);
+      setFormData({ ...formData, imageUrls: newImageUrls });
+      
+      // Insérer dans l'ordre des existantes
+      const newOrder = [...imageOrder];
+      newOrder.splice(targetIndex + 1, 0, draggedUrl as any);
+      setImageOrder(newOrder);
+      
+      setDraggedImageId(null);
+      setDraggedNewImageIndex(null);
+      setDragType(null);
+      return;
+    }
+    
+    // Si on drop une image existante sur une autre existante
+    if (dragType !== 'existing' || !draggedImageId || draggedImageId === targetImageId) return;
+    
+    const draggedIndex = imageOrder.indexOf(draggedImageId);
+    const targetIndex = imageOrder.indexOf(targetImageId);
+    
+    if (draggedIndex === -1 || targetIndex === -1) return;
+    
+    const newOrder = [...imageOrder];
+    [newOrder[draggedIndex], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[draggedIndex]];
+    setImageOrder(newOrder);
+    setDraggedImageId(null);
+    setDragType(null);
   };
 
   const getOrderedExistingImages = () => {
@@ -125,16 +233,55 @@ export default function EditRealisationPage() {
     setFormData(prev => ({ ...prev, imageUrls: urls }));
   };
 
-  const handleMoveNewImage = (index: number, direction: 'up' | 'down') => {
-    const newUrls = [...formData.imageUrls];
+  const handleDragStartNew = (e: React.DragEvent, index: number) => {
+    setDraggedNewImageIndex(index);
+    setDragType('new');
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOverNew = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropNew = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
     
-    if (direction === 'up' && index > 0) {
-      [newUrls[index], newUrls[index - 1]] = [newUrls[index - 1], newUrls[index]];
-    } else if (direction === 'down' && index < newUrls.length - 1) {
-      [newUrls[index], newUrls[index + 1]] = [newUrls[index + 1], newUrls[index]];
+    // Si on drop une image existante sur une nouvelle
+    if (dragType === 'existing' && draggedImageId !== null) {
+      const targetUrl = formData.imageUrls[targetIndex];
+      const draggedIndex = imageOrder.indexOf(draggedImageId);
+      
+      if (draggedIndex === -1) return;
+      
+      // Trouver l'image existante
+      const draggedImage = existingImages.find(img => img.id === draggedImageId);
+      if (!draggedImage) return;
+      
+      // Retirer de l'ordre existant
+      const newOrder = imageOrder.filter(id => id !== draggedImageId);
+      
+      // Ajouter aux nouvelles images
+      const newUrls = [...formData.imageUrls];
+      newUrls.splice(targetIndex, 0, draggedImage.url);
+      
+      setImageOrder(newOrder);
+      setFormData({ ...formData, imageUrls: newUrls });
+      
+      setDraggedImageId(null);
+      setDraggedNewImageIndex(null);
+      setDragType(null);
+      return;
     }
     
+    // Si on drop une image nouvelle sur une autre nouvelle
+    if (dragType !== 'new' || draggedNewImageIndex === null || draggedNewImageIndex === targetIndex) return;
+    
+    const newUrls = [...formData.imageUrls];
+    [newUrls[draggedNewImageIndex], newUrls[targetIndex]] = [newUrls[targetIndex], newUrls[draggedNewImageIndex]];
     setFormData({ ...formData, imageUrls: newUrls });
+    setDraggedNewImageIndex(null);
+    setDragType(null);
   };
 
   const handleVideoUpload = (result: string | string[]) => {
@@ -305,60 +452,6 @@ export default function EditRealisationPage() {
                 Médias
               </h2>
 
-              {/* Images existantes */}
-              {existingImages.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">
-                    Images existantes ({existingImages.length}) - Cliquez sur les flèches pour réordonner
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {getOrderedExistingImages().map((image, index) => (
-                      <div key={image.id} className="relative group">
-                        <img
-                          src={image.url}
-                          alt="Projet"
-                          className="w-full h-32 object-cover rounded-lg border border-neutral-300 dark:border-neutral-600"
-                        />
-                        {/* Boutons d'action */}
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 rounded-lg transition flex items-end justify-center pb-2 gap-1 opacity-0 group-hover:opacity-100">
-                          {/* Bouton haut */}
-                          <button
-                            type="button"
-                            onClick={() => handleMoveImage(image.id, 'up')}
-                            disabled={index === 0}
-                            className="p-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded transition"
-                            title="Déplacer vers le haut"
-                          >
-                            <ChevronUp size={16} />
-                          </button>
-                          
-                          {/* Bouton bas */}
-                          <button
-                            type="button"
-                            onClick={() => handleMoveImage(image.id, 'down')}
-                            disabled={index === getOrderedExistingImages().length - 1}
-                            className="p-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded transition"
-                            title="Déplacer vers le bas"
-                          >
-                            <ChevronDown size={16} />
-                          </button>
-                          
-                          {/* Bouton supprimer */}
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteImage(image.id)}
-                            className="p-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
-                            title="Supprimer"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Upload nouvelles images */}
               <div className="mb-8">
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
@@ -367,59 +460,125 @@ export default function EditRealisationPage() {
                 <MultiImageUpload onImagesChange={handleImagesChange} />
               </div>
 
-              {/* Nouvelles images uploadées */}
-              {formData.imageUrls.length > 0 && (
+              {/* Toutes les images combinées - Affichage horizontal */}
+              {(existingImages.length > 0 || formData.imageUrls.length > 0) && (
                 <div className="mb-8">
                   <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">
-                    Nouvelles images ({formData.imageUrls.length}) - Cliquez sur les flèches pour réordonner
+                    Toutes les images ({existingImages.length + formData.imageUrls.length}) - Glissez-déposez ou utilisez les flèches pour réordonner
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {formData.imageUrls.map((url, index) => (
-                      <div key={url} className="relative group">
-                        <img
-                          src={url}
-                          alt="Nouvelle"
-                          className="w-full h-32 object-cover rounded-lg border border-green-300 dark:border-green-700 border-2"
-                        />
-                        {/* Boutons d'action */}
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 rounded-lg transition flex items-end justify-center pb-2 gap-1 opacity-0 group-hover:opacity-100">
-                          {/* Bouton haut */}
-                          <button
-                            type="button"
-                            onClick={() => handleMoveNewImage(index, 'up')}
-                            disabled={index === 0}
-                            className="p-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded transition"
-                            title="Déplacer vers le haut"
-                          >
-                            <ChevronUp size={16} />
-                          </button>
-                          
-                          {/* Bouton bas */}
-                          <button
-                            type="button"
-                            onClick={() => handleMoveNewImage(index, 'down')}
-                            disabled={index === formData.imageUrls.length - 1}
-                            className="p-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded transition"
-                            title="Déplacer vers le bas"
-                          >
-                            <ChevronDown size={16} />
-                          </button>
-                          
-                          {/* Bouton supprimer */}
-                          <button
-                            type="button"
-                            onClick={() => setFormData({
-                              ...formData,
-                              imageUrls: formData.imageUrls.filter(u => u !== url)
-                            })}
-                            className="p-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
-                            title="Supprimer"
-                          >
-                            <X size={16} />
-                          </button>
+                  <div className="flex gap-3 overflow-x-auto pb-2 px-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {/* Images existantes */}
+                    {getOrderedExistingImages().map((image, index) => {
+                      const totalExisting = getOrderedExistingImages().length;
+                      return (
+                        <div
+                          key={`existing-${image.id}`}
+                          draggable
+                          onDragStart={(e) => handleDragStartExisting(e, image.id)}
+                          onDragOver={handleDragOverExisting}
+                          onDrop={(e) => handleDropExisting(e, image.id)}
+                          className="flex-shrink-0 relative group"
+                        >
+                          <img
+                            src={image.url}
+                            alt="Projet"
+                            className="h-40 w-40 object-cover rounded-lg border-2 border-neutral-300 dark:border-neutral-600 cursor-move transition group-hover:opacity-60"
+                          />
+                          {/* Boutons d'action */}
+                          <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-70 rounded-lg transition flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                            {/* Flèche gauche */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImage(image.id, 'left')}
+                              disabled={index === 0}
+                              className="p-2 bg-blue-500 hover:bg-blue-600 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-full transition shadow-lg"
+                              title="Déplacer à gauche"
+                            >
+                              <ChevronLeft size={18} />
+                            </button>
+                            
+                            {/* Flèche droite */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImage(image.id, 'right')}
+                              disabled={index === totalExisting - 1 && formData.imageUrls.length === 0}
+                              className="p-2 bg-blue-500 hover:bg-blue-600 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-full transition shadow-lg"
+                              title="Déplacer à droite"
+                            >
+                              <ChevronRight size={18} />
+                            </button>
+                            
+                            {/* Bouton supprimer */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(image.id)}
+                              className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition shadow-lg"
+                              title="Supprimer"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+
+                    {/* Nouvelles images uploadées */}
+                    {formData.imageUrls.map((url, index) => {
+                      const totalExisting = getOrderedExistingImages().length;
+                      return (
+                        <div
+                          key={`new-${url}`}
+                          draggable
+                          onDragStart={(e) => handleDragStartNew(e, index)}
+                          onDragOver={handleDragOverNew}
+                          onDrop={(e) => handleDropNew(e, index)}
+                          className="flex-shrink-0 relative group"
+                        >
+                          <img
+                            src={url}
+                            alt="Nouvelle"
+                            className="h-40 w-40 object-cover rounded-lg border-2 border-green-400 dark:border-green-700 cursor-move transition group-hover:opacity-60"
+                          />
+                          {/* Boutons d'action */}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                            {/* Flèche gauche */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveNewImage(index, 'left')}
+                              disabled={index === 0 && totalExisting === 0}
+                              className="p-2 bg-blue-500 hover:bg-blue-600 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-full transition shadow-lg"
+                              title="Déplacer à gauche"
+                            >
+                              <ChevronLeft size={18} />
+                            </button>
+                            
+                            {/* Flèche droite */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveNewImage(index, 'right')}
+                              disabled={index === formData.imageUrls.length - 1}
+                              className="p-2 bg-blue-500 hover:bg-blue-600 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white rounded-full transition shadow-lg"
+                              title="Déplacer à droite"
+                            >
+                              <ChevronRight size={18} />
+                            </button>
+                            
+                            {/* Bouton supprimer */}
+                            <button
+                              type="button"
+                              onClick={() => setFormData({
+                                ...formData,
+                                imageUrls: formData.imageUrls.filter(u => u !== url)
+                              })}
+                              className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition shadow-lg"
+                              title="Supprimer"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

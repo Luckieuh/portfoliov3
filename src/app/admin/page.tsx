@@ -22,10 +22,34 @@ export default function AdminPage() {
   const [realisations, setRealisations] = useState<Realisation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    loadRealisations();
-  }, []);
+    // Vérifier l'authentification en appelant un endpoint protégé
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/verify', {
+          method: 'GET',
+          credentials: 'include', // Important: inclure les cookies
+        });
+
+        if (response.status === 401 || !response.ok) {
+          // Pas authentifié, rediriger vers login
+          router.push('/auth/login');
+          return;
+        }
+
+        // Authentifié, charger les réalisations
+        setIsAuthenticated(true);
+        loadRealisations();
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        router.push('/auth/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const loadRealisations = async () => {
     try {
@@ -67,6 +91,17 @@ export default function AdminPage() {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la suppression' });
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-neutral-600 dark:text-neutral-400">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 py-12 px-4">

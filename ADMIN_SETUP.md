@@ -1,5 +1,8 @@
 # 🔐 Système d'Administration
 
+POUR CHANGER ID ADMIN : LANCER DANS LE TERMINAL : npm run admin:manage
+
+
 ## Vue d'ensemble
 
 Ce portfolio inclut un **système d'authentification sécurisé** pour accéder au tableau d'administration et gérer les projets (réalisations).

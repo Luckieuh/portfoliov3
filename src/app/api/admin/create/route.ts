@@ -2,20 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 
-// POST - Initialiser le compte admin (une seule fois)
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { username, password } = body;
-
-    if (!username || !password) {
-      return NextResponse.json(
-        { error: 'Username and password are required' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier si un admin existe déjà
+    // Vérifier s'il existe déjà un admin
     const existingAdmin = await prisma.admin.findFirst();
     
     if (existingAdmin) {
@@ -25,7 +14,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hasher le mot de passe
+    const { username, password } = await request.json();
+
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: 'Username and password are required' },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Le mot de passe doit contenir au moins 8 caractères' },
+        { status: 400 }
+      );
+    }
+
+    // Hacher le mot de passe
     const hashedPassword = await hashPassword(password);
 
     // Créer l'admin
@@ -37,11 +42,15 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { success: true, message: 'Compte admin créé avec succès', id: admin.id },
+      { 
+        success: true, 
+        message: 'Compte admin créé avec succès',
+        admin: { id: admin.id, username: admin.username }
+      },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Admin initialization error:', error);
+    console.error('Admin creation error:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la création du compte admin' },
       { status: 500 }

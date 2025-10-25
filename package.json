@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma migrate deploy && next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "admin:manage": "ts-node scripts/manage-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.913.0",
