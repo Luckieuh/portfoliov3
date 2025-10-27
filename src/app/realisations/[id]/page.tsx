@@ -27,10 +27,10 @@ export default async function RealisationDetail({ params }: Props) {
   }
 
   return (
-    <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100">
+    <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 pt-[10vh]">
       <Header />
       
-      <div className="container mx-auto px-4 py-8 mt-20">
+      <div className="container mx-auto px-4 py-8 mt-12">
 
       <BtnShadow
           bgColor=''

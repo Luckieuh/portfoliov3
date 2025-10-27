@@ -24,45 +24,45 @@ export default async function Realisation() {
     }));
     
     return (
-        <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 overflow-x-hidden relative">
-            {/* SVG en arrière-plan */}
-            <div className='absolute w-full h-full'>
-                <RealSVG />
-            </div>
-
-            {/* Contenu principal au-dessus */}
-            <div className='w-full relative z-10'>
-                <Header />
-                
-                <div className='w-full h-[10vh]'></div>
-
-                <div className='flex justify-center w-full'>
-                    <RealisationTitle />
+        <>
+            <Header />
+            <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 relative pt-[10vh]">
+                {/* SVG en arrière-plan */}
+                <div className='absolute inset-0 pointer-events-none'>
+                    <RealSVG />
                 </div>
 
-                <div className='w-full flex gap-3 whitespace-nowrap mt-5 ml-4 mb-3'>
-                    <BtnShadow 
-                        bgColor='#FF8904'
-                        borderColor='#FF8904'
-                        img='/phone.svg'
-                        text='ME CONTACTER'
-                        textColor='#FFFFFF'
-                        link='/a-propos'
-                    />
-                    <BtnShadow 
-                        bgColor=''
-                        borderColor='#FFFFFF'
-                        img='/camera.svg'
-                        text='MON MATÉRIEL'
-                        textColor='#FFFFFF'
-                        link='/a-propos.pdf'
-                    />
-                </div>
+                {/* Contenu principal au-dessus */}
+                <div className='w-full relative z-10'>
+                    
+                    <div className='flex justify-center w-full'>
+                        <RealisationTitle />
+                    </div>
 
-                <RealisationsClient projects={projects} />
-                
-                <Footer />
+                    <div className='w-full flex gap-3 whitespace-nowrap mt-5 ml-4 mb-3'>
+                        <BtnShadow 
+                            bgColor='#FF8904'
+                            borderColor='#FF8904'
+                            img='/phone.svg'
+                            text='ME CONTACTER'
+                            textColor='#FFFFFF'
+                            link='/a-propos'
+                        />
+                        <BtnShadow 
+                            bgColor=''
+                            borderColor='#FFFFFF'
+                            img='/camera.svg'
+                            text='MON MATÉRIEL'
+                            textColor='#FFFFFF'
+                            link='/a-propos.pdf'
+                        />
+                    </div>
+
+                    <RealisationsClient projects={projects} />
+                    
+                    <Footer />
+                </div>
             </div>
-        </div>
+        </>
     )
 }

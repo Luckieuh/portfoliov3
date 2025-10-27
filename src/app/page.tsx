@@ -6,6 +6,8 @@ import LogoLoop from './components/LogoLoop';
 import RecentRealisations from './components/RecentRealisations';
 import Link from 'next/link';
 import prisma from '../../lib/prisma';
+import { DynamicBanner, DynamicProfileImage } from './components/DynamicImages';
+import BtnShadow from './components/BtnShadow';
 
 
 const socialItems = [
@@ -45,15 +47,14 @@ export default async function Home() {
     }
     return (
         <div className="w-full min-h-screen overflow-hidden bg-white dark:bg-neutral-900">
+                    <Header />
                     <div className="relative w-full">
-                        <div className="w-full h-[90vh] bg-[url('/Banner.png')] bg-cover bg-center bg-no-repeat"></div>
-
-                        <Header />
+                        <DynamicBanner />
 
                         {/* Boutons "Travaillons ensemble" et "Voir mes réalisations" */}
-                        <div className='z-1 absolute bottom-0 left-0 w-full h-[20vh] bg-gradient-to-t dark:from-black to-transparent'></div>
+                        <div className='z-1 absolute bottom-0 left-0 w-full h-[20vh] bg-gradient-to-t from-black to-transparent'></div>
                             <div className='flex-col sm:flex-row z-20 absolute bottom-0 sm:bottom-10 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex  items-center gap-6'>
-                                <a href="./contact" className="btn2 inline-flex items-center sm:px-8 sm:py-5 px-9 py-4 relative border-2 rounded-md border-white text-black leading-none overflow-hidden bg-white hover:text-orange-500 hover:scale-110 duration-500 text-xl whitespace-nowrap justify-center" type="button">
+                                <a href="./a-propos" className="btn2 inline-flex items-center sm:px-8 sm:py-5 px-9 py-4 relative border-2 rounded-md border-white text-black leading-none overflow-hidden bg-white hover:text-orange-500 hover:scale-110 duration-500 text-xl whitespace-nowrap justify-center" type="button">
                                             Travaillons ensemble
                                 </a>
                                 <a href="./realisations" className="btn2 group inline-flex items-center sm:px-8 sm:py-5 px-5 py-4 relative border-2 rounded-md border-white leading-none overflow-hidden hover:scale-110 duration-500 text-xl whitespace-nowrap justify-center" type="button">
@@ -93,27 +94,27 @@ export default async function Home() {
                         {/* Section principale avec l'image et le texte */}
                         <div className='relative w-full lg:h-[40vh] bg-neutral-300 dark:bg-black flex justify-center items-start flex-col md:flex-row pt-3 pb-6'>
                             <div className='z-10 h-full flex justify-center w-full md:w-auto py-8 md:py-0'> 
-                                <img src='/IMG_1949-2.png' alt='Lucas Thomassin' className='object-cover md:h-full rounded-xl md:mr-5 h-[60%] w-[80%]' />
+                                <DynamicProfileImage />
                             </div>
                             <div className='z-10 flex h-full flex-col justify-between md:ml-6 md:px-0 mr-5 w-[80%] md:w-auto relative md:left-0 left-[50%] md:translate-x-0 translate-x-[-50%]'>
                                 <div> 
                                     <h1 className='text-4xl text-black dark:text-white font-medium'>Lucas</h1>
                                     <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>
                                     <div className='space-x-3 space-y-2'>
-                                        <button className='bg-orange-400/40 text-black dark:text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
+                                        <button className='bg-orange-400/40 text-neutral-700 dark:text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
                                             <img src='/location.svg' className='h-5 mb-1 inline-block mr-2'/>
                                             Angoulême
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 bg-orange-800/60 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300 '>
                                             Cadrage
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 bg-orange-800/60 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
                                             Montage
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 bg-orange-800/60 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
                                             Photographie
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 bg-orange-800/60 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
                                             Retouche photo
                                         </button>
                                     </div>

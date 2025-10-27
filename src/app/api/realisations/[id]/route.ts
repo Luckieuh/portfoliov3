@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../../../lib/prisma';
+import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import prisma from '@/lib/prisma';
+import { r2Client, BUCKET_NAME, PUBLIC_URL } from '@/lib/cloudflare';
 
 // GET - Récupérer une réalisation spécifique
 export async function GET(
@@ -132,13 +134,41 @@ export async function DELETE(
       );
     }
 
+    // Récupérer la réalisation avec toutes ses images AVANT suppression
+    const realisation = await prisma.realisation.findUnique({
+      where: { id: parsedId },
+      include: {
+        images: true,
+      },
+    });
+
+    if (!realisation) {
+      return NextResponse.json(
+        { error: 'Réalisation non trouvée' },
+        { status: 404 }
+      );
+    }
+
+    // Supprimer les fichiers de Cloudflare R2
+    // Les images seront supprimées automatiquement par la cascade de Prisma
+    console.log(`Suppression de ${realisation.images.length} images pour la réalisation ${parsedId}`);
+
+    // Supprimer la réalisation de la BD (cascade supprimera aussi les images)
     await prisma.realisation.delete({
       where: { id: parsedId },
     });
 
+    // Supprimer asynchronement les fichiers de Cloudflare
+    // (ne pas attendre pour la réponse, mais logger les erreurs)
+    realisation.images.forEach(image => {
+      deleteCloudflareFile(image.url).catch(error => {
+        console.error(`Erreur suppression Cloudflare ${image.url}:`, error);
+      });
+    });
+
     return NextResponse.json({
       success: true,
-      message: 'Réalisation supprimée avec succès',
+      message: 'Réalisation et ses fichiers supprimés avec succès',
     });
   } catch (error) {
     console.error('Erreur lors de la suppression:', error);
@@ -146,5 +176,29 @@ export async function DELETE(
       { error: 'Erreur lors de la suppression de la réalisation' },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * Supprime un fichier de Cloudflare depuis son URL
+ */
+async function deleteCloudflareFile(url: string): Promise<void> {
+  try {
+    if (!url || url.startsWith('/')) return; // Ignorer les URLs locales
+
+    // Extraire le nom du fichier depuis l'URL
+    const fileName = url.replace(PUBLIC_URL + '/', '').split('?')[0];
+    if (!fileName) return;
+
+    const command = new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName,
+    });
+
+    await r2Client.send(command);
+    console.log(`✓ Fichier supprimé de R2: ${fileName}`);
+  } catch (error) {
+    console.error(`✗ Erreur suppression R2:`, error);
+    // Continuer malgré l'erreur
   }
 }

@@ -42,3 +42,10 @@ model admin {
   username    String    @unique
   password    String
 }
+
+model SiteImage {
+  id        Int     @id @default(autoincrement())
+  key       String  @unique
+  url       String
+  updatedAt DateTime @updatedAt
+}

@@ -7,7 +7,7 @@ import Parcours from '../components/Parcours';
 
 export default function Propos() {
     return (
-        <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 overflow-x-hidden">
+        <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 overflow-x-hidden pt-[10vh]">
             <Header />
             <WireframePropos />
             <div className='w-full h-[12vh]'></div>
@@ -93,7 +93,7 @@ export default function Propos() {
                             <img src="/starwhite.svg" alt="star" className='h-5'/>
                             <p className='text-3xl text-orange-400 font-medium'>Baccalauréat Général - Mention Très Bien</p>
                         </div>
-                        <p className='text-2xl'>Spéacialités Mathématiques, Physique-Chimie</p>
+                        <p className='text-2xl'>Spécialités Mathématiques, Physique-Chimie</p>
                         <p className='text-2xl'>Ingré</p>
                         </div>
                     </div>

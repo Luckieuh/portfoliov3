@@ -1,14 +1,15 @@
 import BtnShadow from './BtnShadow';
+import { DynamicFooterProfileImage } from './DynamicImages';
 
 export default function Footer() {
     return (
             <footer className='w-full min-h-fit bottom-0 relative flex flex-col lg:flex-row bg-black justify-between mt-5 pt-4 text-white pb-8 px-4 lg:px-12 space-x-4'>
                 <div className='h-fit w-full md:w-[50%] mb-6 lg:mb-0'>
                     <div className='flex flex-row w-fit'>
-                        <img src='/IMG_1949-2.png' className='rounded-lg w-30 h-30 object-cover' />
+                        <DynamicFooterProfileImage />
                         <div className='ml-5 h-fit'>
-                            <p className='text-xl sm:text-3xl'>Lucas</p>
-                            <p className='text-2xl sm:text-4xl font-bold'>Thomassin</p>
+                            <p className='text-xl sm:text-3xl font-bold -mb-1 text-orange-400'>Lucas</p>
+                            <p className='text-2xl sm:text-4xl font-extrabold text-orange-400'>Thomassin</p>
                             <p className='text-lg sm:text-xl mb-4 md:whitespace-nowrap'>Étudiant passionné par la vidéo et la photo.</p>
                         </div>
                     </div>

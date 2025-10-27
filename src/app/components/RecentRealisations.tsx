@@ -19,10 +19,10 @@ type RecentRealisationsProps = {
 export default function RecentRealisations({ realisations }: RecentRealisationsProps) {
   return (
     <div className="w-full flex justify-center mt-15 mb-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-[85%] max-w-6xl px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 w-[85%] max-w-6xl px-4">
         {realisations.map((realisation) => (
           <Link key={realisation.id} href={`/realisations/${realisation.id}`}>
-            <div className="group cursor-pointer overflow-hidden rounded-lg">
+            <div className="group cursor-pointer overflow-hidden rounded-lg border-[2px] hover:scale-110 transition-all duration-400 ease-[cubic-bezier(.55,.12,.56,.9)] dark:bg-neutral-800 box-shadow-glow">
               <div className="relative w-full aspect-video bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
                 {realisation.images.length > 0 ? (
                   <>
@@ -97,17 +97,20 @@ export default function RecentRealisations({ realisations }: RecentRealisationsP
                   </div>
                 )}
               </div>
-              <div className="mt-3 p-2">
-                <h3 className="text-lg font-bold text-neutral-800 dark:text-white truncate">
+              <div className="mt-2 p-2 rounded-b-lg">
+                <h3 className="text-xl font-bold text-neutral-800 dark:text-white truncate">
                   {realisation.title}
                 </h3>
-                <div className="flex items-center justify-between gap-2 mb-2">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+                  {realisation.description}
+                </p>
+                <div className="flex items-center justify-between gap-2 mb-2 mt-2">
                   {realisation.categories.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {realisation.categories.map((category, idx) => (
                         <span 
                           key={idx}
-                          className="px-1.5 py-0.5 text-xs font-medium border-1 border-white text-white rounded-full"
+                          className="px-2 py-0.5 text-xs font-medium border-1 border-white text-white rounded-full"
                         >
                           {category.charAt(0).toUpperCase() + category.slice(1)}
                         </span>
@@ -122,9 +125,7 @@ export default function RecentRealisations({ realisations }: RecentRealisationsP
                     })}
                   </span>
                 </div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
-                  {realisation.description}
-                </p>
+
               </div>
             </div>
           </Link>

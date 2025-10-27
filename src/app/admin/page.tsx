@@ -119,13 +119,19 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Bouton de gestion des catégories */}
-        <div className="mb-6">
+        {/* Boutons de gestion */}
+        <div className="mb-6 flex gap-4">
           <button
             onClick={() => router.push('/admin/categories')}
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
           >
             ⚙️ Gérer les catégories
+          </button>
+          <button
+            onClick={() => router.push('/admin/site-images')}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            🖼️ Gérer les images
           </button>
         </div>
 

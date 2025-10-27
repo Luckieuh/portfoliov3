@@ -8,6 +8,7 @@ type Project = {
   id: number;
   title: string;
   description: string;
+  location?: string | null;
   images: Array<{ id: number; url: string }>;
   videoUrl: string | null;
   youtubeUrl: string | null;
@@ -85,7 +86,8 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
         if (searchQuery) {
             filtered = filtered.filter(project => 
                 project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                project.description.toLowerCase().includes(searchQuery.toLowerCase())
+                project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                project.location?.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
@@ -126,78 +128,81 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
         : null;
 
     return (
-        <div className='w-full flex justify-center'>
-            <div className='flex w-full mt-5 mb-5 max-w-[95%]'>
-                <div className='w-full lg:w-[65%] flex flex-col'>
-                    <div className='text-end mb-3'>
-                        <p className='text-2xl md:text-4xl font-black text-neutral-800 dark:text-white'>
-                            {filteredAndSortedProjects.length} RÉSULTAT{filteredAndSortedProjects.length >= 2 ? 'S' : ''}
-                        </p>
-                    </div>
-                    <div className='h-[1px] bg-black dark:bg-white w-full mb-5'></div>
-                    
-                    <div>
-                        <form className="w-full mx-auto mb-4" onSubmit={(e) => e.preventDefault()}>
-                            <div className="flex relative">
-                                <label htmlFor="search-dropdown" className="mb-2 text-sm font-medium text-neutral-900 sr-only">Recherche</label>
-                                
-                                {/* Bouton dropdown */}
-                                <div className="relative">
-                                    <button 
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setIsDropdownOpen(!isDropdownOpen);
-                                        }}
-                                        className="whitespace-nowrap shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-neutral-700 bg-white border-r-1 border-neutral-500 rounded-s-full outline-neutral-400 outline dark:outline-none hover:bg-neutral-100" 
-                                        type="button"
-                                    >
-                                        {selectedCategory}
-                                        <svg className={`w-2.5 h-2.5 ms-2.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
-                                        </svg>
-                                    </button>
+        <div className='w-full flex justify-center flex-col'>
+            {/* Conteneur supérieur: barre de recherche + dernier projet sur la même ligne */}
+            <div className='w-full flex justify-center px-4 mb-8'>
+                <div className='flex w-full max-w-[95%] gap-6 items-start'>
+                    {/* Colonne gauche: recherche et filtres */}
+                    <div className='flex-1 flex flex-col'>
+                        <div className='text-end mb-3'>
+                            <p className='text-2xl md:text-4xl font-black text-neutral-800 dark:text-white'>
+                                {filteredAndSortedProjects.length} RÉSULTAT{filteredAndSortedProjects.length >= 2 ? 'S' : ''}
+                            </p>
+                        </div>
+                        <div className='h-[1px] bg-black dark:bg-white w-full mb-5'></div>
+                        
+                        <div>
+                            <form className="w-full mx-auto mb-4" onSubmit={(e) => e.preventDefault()}>
+                                <div className="flex relative">
+                                    <label htmlFor="search-dropdown" className="mb-2 text-sm font-medium text-neutral-900 sr-only">Recherche</label>
                                     
-                                    {/* Menu déroulant */}
-                                    {isDropdownOpen && (
-                                        <div className="absolute top-full mt-1 left-0 z-50 bg-white divide-y rounded-lg shadow-lg w-44">
-                                            <ul className="py-2 text-sm text-neutral-700">
-                                                <li>
-                                                    <button 
-                                                        type="button" 
-                                                        onClick={() => {
-                                                            setSelectedCategory('Plus récent');
-                                                            setIsDropdownOpen(false);
-                                                        }}
-                                                        className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
-                                                    >
-                                                        Plus récent
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button 
-                                                        type="button" 
-                                                        onClick={() => {
-                                                            setSelectedCategory('Plus ancien');
-                                                            setIsDropdownOpen(false);
-                                                        }}
-                                                        className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
-                                                    >
-                                                        Plus ancien
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button 
-                                                        type="button" 
-                                                        onClick={() => {
-                                                            setSelectedCategory('Ordre alphabétique');
-                                                            setIsDropdownOpen(false);
-                                                        }}
-                                                        className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
-                                                    >
-                                                        Ordre alphabétique
-                                                    </button>
-                                                </li>
-                                            </ul>
+                                    {/* Bouton dropdown */}
+                                    <div className="relative">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setIsDropdownOpen(!isDropdownOpen);
+                                            }}
+                                            className="whitespace-nowrap shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-neutral-700 bg-white border-r-1 border-neutral-500 rounded-s-full outline-neutral-400 outline dark:outline-none hover:bg-neutral-100" 
+                                            type="button"
+                                        >
+                                            {selectedCategory}
+                                            <svg className={`w-2.5 h-2.5 ms-2.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        {/* Menu déroulant */}
+                                        {isDropdownOpen && (
+                                            <div className="absolute top-full mt-1 left-0 z-50 bg-white divide-y rounded-lg shadow-lg w-44">
+                                                <ul className="py-2 text-sm text-neutral-700">
+                                                    <li>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => {
+                                                                setSelectedCategory('Plus récent');
+                                                                setIsDropdownOpen(false);
+                                                            }}
+                                                            className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
+                                                        >
+                                                            Plus récent
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => {
+                                                                setSelectedCategory('Plus ancien');
+                                                                setIsDropdownOpen(false);
+                                                            }}
+                                                            className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
+                                                        >
+                                                            Plus ancien
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => {
+                                                                setSelectedCategory('Ordre alphabétique');
+                                                                setIsDropdownOpen(false);
+                                                            }}
+                                                            className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
+                                                        >
+                                                            Ordre alphabétique
+                                                        </button>
+                                                    </li>
+                                                </ul>
                                         </div>
                                     )}
                                 </div>
@@ -246,9 +251,122 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                             Réinitialiser
                         </button>
                     </div>
+                    </div>
 
+                    {/* Dernier projet - à droite sur la même ligne */}
+                    {latestProject && (
+                        <div className='hidden lg:flex lg:w-[340px] flex-shrink-0'>
+                            <Link href={`/realisations/${latestProject.id}`} className="block group w-full">
+                                <div className='rounded-xl cursor-pointer transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700'>
+
+                                    <div className="overflow-hidden rounded-xl">
+                                        <div className="relative w-full aspect-video rounded-t-xl overflow-hidden">
+                                            {/* Miniature YouTube (prioritaire) */}
+                                            {latestProject.youtubeUrl && (
+                                                <>
+                                                    <div 
+                                                        className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                                                        style={{ backgroundImage: `url('${getYoutubeThumbnail(latestProject.youtubeUrl)}')` }}
+                                                    ></div>
+                                                    <div className="relative w-full h-full flex items-center justify-center bg-neutral-900">
+                                                        <img 
+                                                            src={getYoutubeThumbnail(latestProject.youtubeUrl) || ''} 
+                                                            alt={latestProject.title} 
+                                                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                        />
+                                                        {/* Play button overlay */}
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                                            <svg className="w-12 h-12 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {/* Images (si pas de YouTube) */}
+                                            {!latestProject.youtubeUrl && latestProject.images.length > 0 && (
+                                                <>
+                                                    {/* Cas 1: Une seule image avec flou en arrière-plan */}
+                                                    {latestProject.images.length === 1 && (
+                                                        <>
+                                                            <div 
+                                                                className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                                                                style={{ backgroundImage: `url('${latestProject.images[0].url}')` }}
+                                                            ></div>
+                                                            <div className="relative w-full h-full flex items-center justify-center">
+                                                                <img 
+                                                                    src={latestProject.images[0].url} 
+                                                                    alt={latestProject.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                                />
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    {/* Cas 2: Deux images */}
+                                                    {latestProject.images.length === 2 && (
+                                                        <div className="relative w-full h-full grid grid-cols-2 gap-1">
+                                                            {latestProject.images.map((img) => (
+                                                                <div key={img.id} className="relative flex items-center justify-center bg-neutral-900">
+                                                                    <img 
+                                                                        src={img.url} 
+                                                                        alt={latestProject.title} 
+                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Cas 3: Trois ou plus images - Layout 2x1 (2 à gauche en colonne, 1 à droite) */}
+                                                    {latestProject.images.length >= 3 && (
+                                                        <div className="relative w-full h-full grid grid-cols-3 gap-1">
+                                                            {/* Colonne gauche avec 2 images en hauteur */}
+                                                            <div className="col-span-1 row-span-2 flex flex-col gap-1">
+                                                                {latestProject.images.slice(0, 2).map((img) => (
+                                                                    <div key={img.id} className="relative flex-1 flex items-center justify-center bg-neutral-900">
+                                                                        <img 
+                                                                            src={img.url} 
+                                                                            alt={latestProject.title} 
+                                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            {/* Image droite prenant toute la hauteur */}
+                                                            <div className="col-span-2 row-span-2 relative flex items-center justify-center bg-neutral-900">
+                                                                <img 
+                                                                    src={latestProject.images[2].url} 
+                                                                    alt={latestProject.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="mt-1 px-5 py-1">
+                                            <h2 className='w-full flex justify-center text-2xl font-black text-neutral-800 dark:text-white group-hover:text-orange-500 transition-colors'>
+                                                DERNIER PROJET
+                                            </h2>
+                                            <h3 className="w-full flex justify-center text-2xl font-semibold text-neutral-600 dark:text-white group-hover:text-orange-400 transition-colors">
+                                                {latestProject.title}
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Grille de réalisations - pleine largeur */}
+            <div className='w-full flex justify-center px-4'>
+                <div className='flex w-full max-w-[95%]'>
                     {/* Grille de réalisations */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                         {filteredAndSortedProjects.length === 0 ? (
                             <div className="col-span-full text-center py-12">
                                 <p className="text-xl text-neutral-600 dark:text-neutral-400">Aucune réalisation trouvée</p>
@@ -256,8 +374,8 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                         ) : (
                             filteredAndSortedProjects.map((project) => (
                                 <Link key={project.id} href={`/realisations/${project.id}`} className="block group">
-                                    <div className="overflow-hidden bg-neutral-800 rounded-lg cursor-pointer transition-all duration-300">
-                                        <div className="relative w-full aspect-video rounded-xl overflow-hidden">
+                                    <div className="overflow-hidden bg-zinc-200 border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 rounded-xl cursor-pointer transition-all duration-300">
+                                        <div className="relative w-full aspect-video rounded-t-xl overflow-hidden">
                                             {/* Miniature YouTube (prioritaire) */}
                                             {project.youtubeUrl && (
                                                 <>
@@ -353,23 +471,31 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                             )}
                                         </div>
                                         
-                                        <div className="p-1">
+                                        <div className="px-5 py-2">
+                                            <div className='flex items-center justify-between'>
                                             <h3 className="text-2xl font-bold text-neutral-800 dark:text-white group-hover:text-orange-500 transition-colors">
                                                 {project.title}
                                             </h3>
-                                            <p>
+                                            {project.location && (
+                                                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                                    {project.location}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                            <p className='group-hover:text-orange-400'>
                                                 {project.description.length > 100
                                                     ? project.description.slice(0, 100) + '...'
                                                     : project.description
                                                 }
                                             </p>
-                                            <div className="flex items-center justify-between gap-2 mt-3">
+                                            <div className="flex items-center justify-between gap-2 mt-5">
                                                 {project.categories.length > 0 && (
                                                     <div className="flex flex-wrap gap-2">
                                                         {project.categories.map((category, idx) => (
                                                             <span 
                                                                 key={idx}
-                                                                className="px-2 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
+                                                                className="px-2.5 py-1 text-xs font-medium group-hover:bg-orange-800 border-1 border-neutral-600 group-hover:border-orange-400 transition-colors dark:border-white text-neutral-600 group-hover:text-orange-400 dark:text-white rounded-full"
                                                             >
                                                                 {category.charAt(0).toUpperCase() + category.slice(1)}
                                                             </span>
@@ -391,112 +517,6 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                         )}
                     </div>
                 </div>
-
-                {/* Sidebar - Dernier projet */}
-                {latestProject && (
-                    <div className='hidden lg:block w-[30%] mx-6 scale-90'>
-                        <Link href={`/realisations/${latestProject.id}`} className="block group">
-                            <div className='box-shadow-glow-orange p-3 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/40'>
-                                <h2 className='w-full flex justify-center text-3xl font-black text-neutral-800 dark:text-white mb-4 group-hover:text-orange-500 transition-colors'>
-                                    DERNIER PROJET
-                                </h2>
-                                <div className="overflow-hidden rounded-xl">
-                                    <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-                                        {/* Miniature YouTube (prioritaire) */}
-                                        {latestProject.youtubeUrl && (
-                                            <>
-                                                <div 
-                                                    className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
-                                                    style={{ backgroundImage: `url('${getYoutubeThumbnail(latestProject.youtubeUrl)}')` }}
-                                                ></div>
-                                                <div className="relative w-full h-full flex items-center justify-center bg-neutral-900">
-                                                    <img 
-                                                        src={getYoutubeThumbnail(latestProject.youtubeUrl) || ''} 
-                                                        alt={latestProject.title} 
-                                                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                    />
-                                                    {/* Play button overlay */}
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                                        <svg className="w-12 h-12 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M8 5v14l11-7z" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-                                        {/* Images (si pas de YouTube) */}
-                                        {!latestProject.youtubeUrl && latestProject.images.length > 0 && (
-                                            <>
-                                                {/* Cas 1: Une seule image avec flou en arrière-plan */}
-                                                {latestProject.images.length === 1 && (
-                                                    <>
-                                                        <div 
-                                                            className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
-                                                            style={{ backgroundImage: `url('${latestProject.images[0].url}')` }}
-                                                        ></div>
-                                                        <div className="relative w-full h-full flex items-center justify-center">
-                                                            <img 
-                                                                src={latestProject.images[0].url} 
-                                                                alt={latestProject.title} 
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                            />
-                                                        </div>
-                                                    </>
-                                                )}
-
-                                                {/* Cas 2: Deux images */}
-                                                {latestProject.images.length === 2 && (
-                                                    <div className="relative w-full h-full grid grid-cols-2 gap-1">
-                                                        {latestProject.images.map((img) => (
-                                                            <div key={img.id} className="relative flex items-center justify-center bg-neutral-900">
-                                                                <img 
-                                                                    src={img.url} 
-                                                                    alt={latestProject.title} 
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {/* Cas 3: Trois ou plus images - Layout 2x1 (2 à gauche en colonne, 1 à droite) */}
-                                                {latestProject.images.length >= 3 && (
-                                                    <div className="relative w-full h-full grid grid-cols-3 gap-1">
-                                                        {/* Colonne gauche avec 2 images en hauteur */}
-                                                        <div className="col-span-1 row-span-2 flex flex-col gap-1">
-                                                            {latestProject.images.slice(0, 2).map((img) => (
-                                                                <div key={img.id} className="relative flex-1 flex items-center justify-center bg-neutral-900">
-                                                                    <img 
-                                                                        src={img.url} 
-                                                                        alt={latestProject.title} 
-                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                                    />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        {/* Image droite prenant toute la hauteur */}
-                                                        <div className="col-span-2 row-span-2 relative flex items-center justify-center bg-neutral-900">
-                                                            <img 
-                                                                src={latestProject.images[2].url} 
-                                                                alt={latestProject.title} 
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                    <div className="mt-2">
-                                        <h3 className="text-2xl font-bold text-neutral-800 dark:text-white group-hover:text-orange-500 transition-colors">
-                                            {latestProject.title}
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    </div>
-                )}
             </div>
         </div>
     );
