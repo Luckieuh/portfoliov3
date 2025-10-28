@@ -27,6 +27,8 @@ export default async function Home() {
                 images: {
                     orderBy: { createdAt: 'asc' },
                 },
+                categories: true,
+                tags: true,
             },
         });
     } catch (err) {
@@ -92,7 +94,7 @@ export default async function Home() {
                         </div>
 
                         {/* Section principale avec l'image et le texte */}
-                        <div className='relative w-full lg:h-[40vh] bg-neutral-300 dark:bg-black flex justify-center items-start flex-col md:flex-row pt-3 pb-6'>
+                        <div className='relative w-full lg:h-fit bg-neutral-300 dark:bg-black flex justify-center items-start flex-col md:flex-row pt-3 pb-6'>
                             <div className='z-10 h-full flex justify-center w-full md:w-auto py-8 md:py-0'> 
                                 <DynamicProfileImage />
                             </div>
@@ -101,8 +103,8 @@ export default async function Home() {
                                     <h1 className='text-4xl text-black dark:text-white font-medium'>Lucas</h1>
                                     <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>
                                     <div className='space-x-3 space-y-2'>
-                                        <button className='bg-orange-400/40 text-neutral-700 dark:text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
-                                            <img src='/location.svg' className='h-5 mb-1 inline-block mr-2'/>
+                                        <button className='bg-orange-400/40 text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
+                                            <img src='/localisation.svg' className='h-5 mb-1 inline-block mr-2'/>
                                             Angoulême
                                         </button>
                                         <button className='outline-orange-400 bg-orange-800/60 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300 '>
@@ -121,13 +123,14 @@ export default async function Home() {
                                     <p className='mt-5 font-mono text-xl text-left mb-6 text-black dark:text-white'>
                                         Étudiant en BUT MMI à Angoulême, je suis passionné de vidéo et photo.
                                     </p>
-                                </div>
-                                <div className='flex justify-start mb-2'> 
+                                    <div className='flex justify-start mb-2'> 
                                     <a href="./a-propos" className="btn2 inline-flex items-center px-8 py-3 relative border-2 rounded-md border-white text-black leading-none overflow-hidden bg-white hover:scale-110 duration-500 text-xl" type="button">
                                         En savoir plus
                                         <img src='/upright.png' className='h-4 inline-block ml-3'/>
                                     </a>
                                 </div>
+                                </div>
+
                             </div>
                                 <Hole />
                                 <Tore />

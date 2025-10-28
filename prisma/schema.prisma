@@ -10,9 +10,17 @@ datasource db {
 }
 
 model Category {
-  id        Int     @id @default(autoincrement())
-  name      String  @unique
-  createdAt DateTime @default(now())
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  createdAt   DateTime      @default(now())
+  realisations Realisation[]
+}
+
+model Tag {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  createdAt   DateTime      @default(now())
+  realisations Realisation[]
 }
 
 model Realisation {
@@ -23,7 +31,8 @@ model Realisation {
   videoUrl    String?
   youtubeUrl  String?
   link        String?
-  categories  String[]             @default([])
+  categories  Category[]
+  tags        Tag[]
   images      RealisationImage[]
   createdAt   DateTime             @default(now())
 }

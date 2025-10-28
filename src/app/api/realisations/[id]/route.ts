@@ -28,6 +28,8 @@ export async function GET(
             { createdAt: 'asc' },
           ],
         },
+        categories: true,
+        tags: true,
       },
     });
 
@@ -65,7 +67,15 @@ export async function PUT(
     }
 
   const body = await request.json();
-  const { title, description, location, videoUrl, youtubeUrl, link, categories, createdAt, imageUrls = [] } = body;
+  const { title, description, location, videoUrl, youtubeUrl, link, categories = [], tags = [], createdAt, imageUrls = [] } = body;
+
+  // Valider que les catégories sont fournies et non vides
+  if (!Array.isArray(categories) || categories.length === 0) {
+    return NextResponse.json(
+      { error: 'Au moins une catégorie doit être sélectionnée' },
+      { status: 400 }
+    );
+  }
 
     // Valider et parser la date si fournie
     let projectDate: Date | undefined;
@@ -86,7 +96,12 @@ export async function PUT(
       videoUrl: videoUrl || null,
       youtubeUrl: youtubeUrl || null,
       link: link || null,
-      categories: categories || [],
+      categories: {
+        set: categories.map((id: number) => ({ id }))
+      },
+      tags: {
+        set: tags.length > 0 ? tags.map((id: number) => ({ id })) : []
+      },
       ...(projectDate && { createdAt: projectDate }),
     };
 
@@ -105,6 +120,8 @@ export async function PUT(
       where: { id: parsedId },
       include: {
         images: { orderBy: [ { position: 'asc' }, { createdAt: 'asc' } ] },
+        categories: true,
+        tags: true,
       },
     });
 

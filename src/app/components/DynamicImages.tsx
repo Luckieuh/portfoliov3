@@ -95,7 +95,7 @@ export function DynamicProfileImage() {
       imageKey="homepage_profile"
       fallback="/IMG_1949-2.png"
       alt="Lucas Thomassin"
-      className="object-cover md:h-full rounded-xl md:mr-5 h-[60%] w-[80%]"
+      className="object-cover md:h-[40vh] rounded-xl md:mr-5 h-[60vh] md:w-[80%]"
     />
   );
 }

@@ -13,7 +13,8 @@ interface Realisation {
   videoUrl?: string;
   youtubeUrl?: string;
   link?: string;
-  categories: string[];
+  categories: Array<{ id: number; name: string }>;
+  tags: Array<{ id: number; name: string }>;
   createdAt: string;
 }
 
@@ -184,12 +185,12 @@ export default function AdminPage() {
                       {realisation.description}
                     </p>
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {realisation.categories.map((cat) => (
+                      {realisation.categories && Array.isArray(realisation.categories) && realisation.categories.map((cat) => (
                         <span
-                          key={cat}
+                          key={cat.id}
                           className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-100 px-2 py-1 rounded"
                         >
-                          {cat}
+                          {cat.name}
                         </span>
                       ))}
                     </div>

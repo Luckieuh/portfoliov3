@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { getYoutubeThumbnail } from '@/lib/youtube';
+import BtnShadow from './../components/BtnShadow';
 
 type Project = {
   id: number;
@@ -13,7 +14,8 @@ type Project = {
   videoUrl: string | null;
   youtubeUrl: string | null;
   link: string | null;
-  categories: string[];
+  categories: { id: number; name: string }[];
+  tags: { id: number; name: string }[];
   createdAt: string;
 };
 
@@ -21,60 +23,99 @@ type RealisationsClientProps = {
   projects: Project[];
 };
 
-type CategoryFilter = {
+type Filter = {
   [key: string]: boolean;
 };
 
 export default function RealisationsClient({ projects }: RealisationsClientProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('Plus récent');
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+    const [selectedSort, setSelectedSort] = useState('Plus récent');
+    const [selectedCategory, setSelectedCategory] = useState('Tous les types');
     const [searchQuery, setSearchQuery] = useState('');
-    const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-    const [checkedFilters, setCheckedFilters] = useState<CategoryFilter>({});
-    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [availableCategories, setAvailableCategories] = useState<Array<{id: number; name: string}>>([]);
+    const [availableTags, setAvailableTags] = useState<Array<{id: number; name: string}>>([]);
+    const [checkedTags, setCheckedTags] = useState<Filter>({});
+    const [loadingFilters, setLoadingFilters] = useState(true);
 
-    // Charger les catégories depuis l'API
+    // Charger les catégories et tags depuis l'API
     useEffect(() => {
-      const loadCategories = async () => {
+      const loadFilters = async () => {
         try {
-          setLoadingCategories(true);
-          const response = await fetch('/api/categories');
-          if (response.ok) {
-            const data = await response.json();
-            const categoryNames = data.map((cat: { name: string }) => cat.name);
-            setAvailableCategories(categoryNames);
-            // Initialiser les filtres avec toutes les catégories à false
-            const initialFilters: CategoryFilter = {};
-            categoryNames.forEach((cat: string) => {
-              initialFilters[cat] = false;
+          setLoadingFilters(true);
+          const [categoriesResponse, tagsResponse] = await Promise.all([
+            fetch('/api/categories'),
+            fetch('/api/tags')
+          ]);
+          
+          if (categoriesResponse.ok && tagsResponse.ok) {
+            const [categoriesData, tagsData] = await Promise.all([
+              categoriesResponse.json(),
+              tagsResponse.json()
+            ]);
+            
+            setAvailableCategories(categoriesData);
+            setAvailableTags(tagsData);
+            
+            // Initialiser les filtres pour les tags
+            const initialTagFilters: Filter = {};
+            
+            tagsData.forEach((tag: { id: number; name: string }) => {
+              initialTagFilters[tag.name] = false;
             });
-            setCheckedFilters(initialFilters);
+            
+            setCheckedTags(initialTagFilters);
           }
         } catch (error) {
-          console.error('Erreur lors du chargement des catégories:', error);
+          console.error('Erreur lors du chargement des filtres:', error);
         } finally {
-          setLoadingCategories(false);
+          setLoadingFilters(false);
         }
       };
-      loadCategories();
+      loadFilters();
     }, []);
+
+    // Fermer les dropdowns quand on change la sélection du tri
+    useEffect(() => {
+        setIsCategoryDropdownOpen(false);
+    }, [isDropdownOpen]);
+
+    // Fermer les dropdowns en cliquant en dehors
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (!target.closest('.category-dropdown-container') && !target.closest('.sort-dropdown-container')) {
+                setIsDropdownOpen(false);
+                setIsCategoryDropdownOpen(false);
+            }
+        };
+        
+        if (isDropdownOpen || isCategoryDropdownOpen) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [isDropdownOpen, isCategoryDropdownOpen]);
 
     // Fonction de réinitialisation
     const handleReset = () => {
-        setSelectedCategory('Plus récent');
+        setSelectedSort('Plus récent');
         setSearchQuery('');
-        const resetFilters: CategoryFilter = {};
-        availableCategories.forEach((cat) => {
-          resetFilters[cat] = false;
+        setSelectedCategory('Tous les types');
+        
+        const resetTagFilters: Filter = {};
+        
+        availableTags.forEach((tag) => {
+          resetTagFilters[tag.name] = false;
         });
-        setCheckedFilters(resetFilters);
+        
+        setCheckedTags(resetTagFilters);
     };
 
-    // Fonction pour gérer les changements de checkbox
-    const handleCheckboxChange = (filter: string) => {
-        setCheckedFilters(prev => ({
+
+    const handleTagChange = (tagName: string) => {
+        setCheckedTags(prev => ({
             ...prev,
-            [filter]: !prev[filter]
+            [tagName]: !prev[tagName]
         }));
     };
 
@@ -87,25 +128,33 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
             filtered = filtered.filter(project => 
                 project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                project.location?.toLowerCase().includes(searchQuery.toLowerCase())
+                project.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                project.tags.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
 
         // Filtrage par catégories
-        const activeFilters = Object.entries(checkedFilters)
+        if (selectedCategory && selectedCategory !== 'Tous les types') {
+            filtered = filtered.filter(project => 
+                project.categories.some(cat => cat.name === selectedCategory)
+            );
+        }
+
+        // Filtrage par tags
+        const activeTags = Object.entries(checkedTags)
             .filter(([_, isChecked]) => isChecked)
             .map(([key, _]) => key);
 
-        if (activeFilters.length > 0) {
+        if (activeTags.length > 0) {
             filtered = filtered.filter(project => 
-                activeFilters.some(filter => 
-                    project.categories.includes(filter)
+                activeTags.some(tagName => 
+                    project.tags.some(tag => tag.name === tagName)
                 )
             );
         }
 
         // Tri
-        switch (selectedCategory) {
+        switch (selectedSort) {
             case 'Plus récent':
                 filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 break;
@@ -118,7 +167,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
         }
 
         return filtered;
-    }, [projects, searchQuery, checkedFilters, selectedCategory]);
+    }, [projects, searchQuery, selectedCategory, checkedTags, selectedSort]);
 
     // Dernier projet
     const latestProject = projects.length > 0 
@@ -128,14 +177,22 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
         : null;
 
     return (
-        <div className='w-full flex justify-center flex-col'>
+        <div className='w-full lg:px-20 flex justify-center flex-col mt-8'>
             {/* Conteneur supérieur: barre de recherche + dernier projet sur la même ligne */}
             <div className='w-full flex justify-center px-4 mb-8'>
-                <div className='flex w-full max-w-[95%] gap-6 items-start'>
-                    {/* Colonne gauche: recherche et filtres */}
-                    <div className='flex-1 flex flex-col'>
-                        <div className='text-end mb-3'>
-                            <p className='text-2xl md:text-4xl font-black text-neutral-800 dark:text-white'>
+                <div className='flex justify-center w-full max-w-[95%] gap-6 items-start'>
+                    {/* Recherche et filtres */}
+                    <div className='flex-1 flex flex-col sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px]'>
+                        <div className='flex flex-row justify-between text-end mb-3'>
+                            <BtnShadow 
+                                bgColor='#FF8904'
+                                borderColor='#FF8904'
+                                img='/phone.svg'
+                                text='ME CONTACTER'
+                                textColor='#FFFFFF'
+                                link='/a-propos'
+                            />
+                            <p className='text-2xl md:text-4xl font-extrabold text-neutral-800 dark:text-white'>
                                 {filteredAndSortedProjects.length} RÉSULTAT{filteredAndSortedProjects.length >= 2 ? 'S' : ''}
                             </p>
                         </div>
@@ -147,16 +204,16 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                     <label htmlFor="search-dropdown" className="mb-2 text-sm font-medium text-neutral-900 sr-only">Recherche</label>
                                     
                                     {/* Bouton dropdown */}
-                                    <div className="relative">
+                                    <div className="relative sort-dropdown-container">
                                         <button 
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 setIsDropdownOpen(!isDropdownOpen);
                                             }}
-                                            className="whitespace-nowrap shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-neutral-700 bg-white border-r-1 border-neutral-500 rounded-s-full outline-neutral-400 outline dark:outline-none hover:bg-neutral-100" 
+                                            className=" whitespace-nowrap shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-neutral-700 bg-white border-r-1 border-neutral-500 rounded-s-full outline-neutral-400 outline dark:outline-none hover:bg-neutral-100" 
                                             type="button"
                                         >
-                                            {selectedCategory}
+                                            {selectedSort}
                                             <svg className={`w-2.5 h-2.5 ms-2.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                                                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
                                             </svg>
@@ -170,7 +227,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                         <button 
                                                             type="button" 
                                                             onClick={() => {
-                                                                setSelectedCategory('Plus récent');
+                                                                setSelectedSort('Plus récent');
                                                                 setIsDropdownOpen(false);
                                                             }}
                                                             className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
@@ -182,7 +239,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                         <button 
                                                             type="button" 
                                                             onClick={() => {
-                                                                setSelectedCategory('Plus ancien');
+                                                                setSelectedSort('Plus ancien');
                                                                 setIsDropdownOpen(false);
                                                             }}
                                                             className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
@@ -194,7 +251,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                         <button 
                                                             type="button" 
                                                             onClick={() => {
-                                                                setSelectedCategory('Ordre alphabétique');
+                                                                setSelectedSort('Ordre alphabétique');
                                                                 setIsDropdownOpen(false);
                                                             }}
                                                             className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left"
@@ -212,41 +269,83 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                         id="search-dropdown" 
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="block p-2.5 w-full z-20 text-sm text-neutral-700 rounded-e-full bg-white dark:placeholder-neutral-400 dark:text-neutral-700 outline-neutral-400 outline dark:outline-none" 
-                                        placeholder="Rechercher une réalisation par lieu, titre..." 
+                                        className="block p-2.5 w-full z-20 text-sm text-neutral-700 rounded-e-full bg-white dark:placeholder-neutral-400 dark:text-neutral-700 outline-neutral-400 outline dark:outline-none [&::-webkit-search-cancel-button]:hidden" 
+                                        placeholder="Rechercher par mot-clé, lieu, titre..." 
                                     />
-                                    <button type="submit" className="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white rounded-e-full flex items-center justify-center">
-                                        <img src="/search.svg" alt="Icône de recherche" className="w-8 h-8" />
-                                        <span className="sr-only">Search</span>
-                                    </button>
+                                    <div className="absolute top-0 end-0 px-2.5 py-1 text-sm font-medium h-full text-white rounded-e-full flex items-center justify-center">
+                                        <svg className='h-full w-full' viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M19.8333 19.8333L23.3749 23.375" stroke="#FF9000" stroke-width="2" stroke-linejoin="round"/>
+                                            <path d="M23.2806 26.244C22.4621 25.4256 22.4621 24.0988 23.2806 23.2805C24.0988 22.4621 25.4257 22.4621 26.2441 23.2805L30.5529 27.5893C31.3713 28.4077 31.3713 29.7345 30.5529 30.5528C29.7346 31.3712 28.4078 31.3712 27.5893 30.5528L23.2806 26.244Z" stroke="#FF9000" stroke-width="2" stroke-linecap="round"/>
+                                            <path d="M22.6666 12.75C22.6666 7.27319 18.2268 2.83334 12.7499 2.83334C7.2731 2.83334 2.83325 7.27319 2.83325 12.75C2.83325 18.2268 7.2731 22.6667 12.7499 22.6667C18.2268 22.6667 22.6666 18.2268 22.6666 12.75Z" stroke="#FF9000" stroke-width="2" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                         </form>
                     </div>
 
-                    <div className='w-full flex flex-col md:flex-row justify-between items-start gap-4'>
-                        {/* Liste de checkboxes */}
-                        <div className="flex flex-wrap gap-4">
-                            {loadingCategories ? (
-                                <p className="text-neutral-600 dark:text-neutral-400">Chargement des catégories...</p>
-                            ) : availableCategories.map((category) => (
-                                <label key={category} className="inline-flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={checkedFilters[category] || false}
-                                        onChange={() => handleCheckboxChange(category)}
-                                        className="w-5 h-5 appearance-none border-2 border-orange-500 rounded cursor-pointer checked:bg-orange-500 checked:border-orange-500 transition-colors" 
-                                        style={{ padding: '3px', boxSizing: 'border-box', backgroundClip: 'content-box' }}
-                                    />
-                                    <span className="text-neutral-700 dark:text-neutral-300 capitalize">{category}</span>
-                                </label>
-                            ))}
+                    <div className='w-full flex flex-row justify-between whitespace-nowrap items-start gap-4'>
+                        {/* Filtres */}
+                        <div className=" w-[40%] flex flex-col gap-4">
+                            {/* Catégories - Dropdown */}
+                            <div>
+                                <div className="w-full relative category-dropdown-container">
+                                    <button 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
+                                        }}
+                                        className="w-full whitespace-nowrap shrink-0 z-10 inline-flex justify-between items-center py-2.5 px-4 text-sm font-medium text-center text-black bg-white border border-neutral-300 rounded-full outline-neutral-400 outline dark:outline-none hover:bg-neutral-200 bg-white" 
+                                        type="button"
+                                    >
+                                        {loadingFilters ? 'Chargement...' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+                                        <svg className={`w-2.5 h-2.5 ms-2.5 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+                                        </svg>
+                                    </button>
+                                    
+                                    {/* Menu déroulant des catégories */}
+                                    {isCategoryDropdownOpen && !loadingFilters && (
+                                        <div className="w-full absolute top-full mt-1 left-0 z-50 bg-white divide-y rounded-lg shadow-lg bg-white border border-neutral-300">
+                                            <ul className="py-2 text-sm text-neutral-700">
+                                                <li>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => {
+                                                            setSelectedCategory('Tous les types');
+                                                            setIsCategoryDropdownOpen(false);
+                                                        }}
+                                                        className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left transition-colors"
+                                                    >
+                                                        Tous les types
+                                                    </button>
+                                                </li>
+                                                {availableCategories.map((category) => (
+                                                    <li key={category.id}>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => {
+                                                                setSelectedCategory(category.name);
+                                                                setIsCategoryDropdownOpen(false);
+                                                            }}
+                                                            className="inline-flex w-full px-4 py-2 hover:bg-neutral-200 text-neutral-700 text-left transition-colors capitalize"
+                                                        >
+                                                            {category.name}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
                         </div>
                         
                         {/* Bouton Réinitialiser */}
                         <button 
                             onClick={handleReset}
-                            className='text-neutral-700 bg-white outline-neutral-400 outline dark:outline-none px-4 py-2 rounded-full hover:bg-neutral-100 hover:cursor-pointer hover:text-neutral-600 transition-colors whitespace-nowrap'
+                            className='text-black bg-white outline-neutral-400 outline dark:outline-none px-4 py-2 rounded-full hover:bg-neutral-200 hover:cursor-pointer transition-colors whitespace-nowrap'
                         >
                             Réinitialiser
                         </button>
@@ -254,15 +353,15 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                     </div>
 
                     {/* Dernier projet - à droite sur la même ligne */}
-                    {latestProject && (
+                    {/* {latestProject && (
                         <div className='hidden lg:flex lg:w-[340px] flex-shrink-0'>
                             <Link href={`/realisations/${latestProject.id}`} className="block group w-full">
                                 <div className='rounded-xl cursor-pointer transition-all duration-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700'>
 
                                     <div className="overflow-hidden rounded-xl">
-                                        <div className="relative w-full aspect-video rounded-t-xl overflow-hidden">
+                                        <div className="relative w-full aspect-video rounded-t-xl overflow-hidden"> */}
                                             {/* Miniature YouTube (prioritaire) */}
-                                            {latestProject.youtubeUrl && (
+                                            {/* {latestProject.youtubeUrl && (
                                                 <>
                                                     <div 
                                                         className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
@@ -273,21 +372,21 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                             src={getYoutubeThumbnail(latestProject.youtubeUrl) || ''} 
                                                             alt={latestProject.title} 
                                                             className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform ease-in-out duration-300"
-                                                        />
+                                                        /> */}
                                                         {/* Play button overlay */}
-                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                                        {/* <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
                                                             <svg className="w-12 h-12 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
                                                                 <path d="M8 5v14l11-7z" />
                                                             </svg>
                                                         </div>
                                                     </div>
                                                 </>
-                                            )}
+                                            )} */}
                                             {/* Images (si pas de YouTube) */}
-                                            {!latestProject.youtubeUrl && latestProject.images.length > 0 && (
-                                                <>
+                                            {/* {!latestProject.youtubeUrl && latestProject.images.length > 0 && (
+                                                <> */}
                                                     {/* Cas 1: Une seule image avec flou en arrière-plan */}
-                                                    {latestProject.images.length === 1 && (
+                                                    {/* {latestProject.images.length === 1 && (
                                                         <>
                                                             <div 
                                                                 className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
@@ -301,10 +400,10 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                                 />
                                                             </div>
                                                         </>
-                                                    )}
+                                                    )} */}
 
                                                     {/* Cas 2: Deux images */}
-                                                    {latestProject.images.length === 2 && (
+                                                    {/* {latestProject.images.length === 2 && (
                                                         <div className="relative w-full h-full grid grid-cols-2 gap-1">
                                                             {latestProject.images.map((img) => (
                                                                 <div key={img.id} className="relative flex items-center justify-center bg-neutral-900">
@@ -316,13 +415,13 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                    )}
+                                                    )} */}
 
                                                     {/* Cas 3: Trois ou plus images - Layout 2x1 (2 à gauche en colonne, 1 à droite) */}
-                                                    {latestProject.images.length >= 3 && (
-                                                        <div className="relative w-full h-full grid grid-cols-3 gap-1">
+                                                    {/* {latestProject.images.length >= 3 && (
+                                                        <div className="relative w-full h-full grid grid-cols-3 gap-1"> */}
                                                             {/* Colonne gauche avec 2 images en hauteur */}
-                                                            <div className="col-span-1 row-span-2 flex flex-col gap-1">
+                                                            {/* <div className="col-span-1 row-span-2 flex flex-col gap-1">
                                                                 {latestProject.images.slice(0, 2).map((img) => (
                                                                     <div key={img.id} className="relative flex-1 flex items-center justify-center bg-neutral-900">
                                                                         <img 
@@ -332,9 +431,9 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                                                         />
                                                                     </div>
                                                                 ))}
-                                                            </div>
+                                                            </div> */}
                                                             {/* Image droite prenant toute la hauteur */}
-                                                            <div className="col-span-2 row-span-2 relative flex items-center justify-center bg-neutral-900">
+                                                            {/* <div className="col-span-2 row-span-2 relative flex items-center justify-center bg-neutral-900">
                                                                 <img 
                                                                     src={latestProject.images[2].url} 
                                                                     alt={latestProject.title} 
@@ -358,12 +457,12 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                 </div>
                             </Link>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
 
             {/* Grille de réalisations - pleine largeur */}
-            <div className='w-full flex justify-center px-4'>
+            <div className='w-full flex justify-center px-4 mt-5'>
                 <div className='flex w-full max-w-[95%]'>
                     {/* Grille de réalisations */}
                     <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
@@ -492,14 +591,33 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                             <div className="flex items-center justify-between gap-2 mt-5">
                                                 {project.categories.length > 0 && (
                                                     <div className="flex flex-wrap gap-2">
-                                                        {project.categories.map((category, idx) => (
+                                                        {/* Catégories */}
+                                                {project.categories.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {project.categories.map((category) => (
                                                             <span 
-                                                                key={idx}
-                                                                className="px-2.5 py-1 text-xs font-medium group-hover:bg-orange-800 border-1 border-neutral-600 group-hover:border-orange-400 transition-colors dark:border-white text-neutral-600 group-hover:text-orange-400 dark:text-white rounded-full"
+                                                                key={category.id}
+                                                                className="px-2.5 py-1 text-xs font-medium bg-orange-700/20 text-orange-700 dark:text-orange-300 rounded-full"
                                                             >
-                                                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                                                                {category.name}
                                                             </span>
                                                         ))}
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Mots-clés */}
+                                                {project.tags.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {project.tags.map((tag) => (
+                                                            <span 
+                                                                key={tag.id}
+                                                                className="px-2.5 py-1 text-xs font-medium group-hover:bg-orange-800 border-1 border-neutral-600 group-hover:border-orange-400 transition-colors dark:border-white text-neutral-600 group-hover:text-orange-400 dark:text-white rounded-full"
+                                                            >
+                                                                {tag.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                                     </div>
                                                 )}
                                                 <span className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap">

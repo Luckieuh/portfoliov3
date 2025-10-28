@@ -19,6 +19,8 @@ export default async function RealisationDetail({ params }: Props) {
       images: {
         orderBy: { createdAt: 'asc' },
       },
+      categories: true,
+      tags: true,
     },
   });
 
@@ -84,12 +86,12 @@ export default async function RealisationDetail({ params }: Props) {
 
           {project.categories.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2 cursor-default">
-                  {project.categories.map((category, idx) => (
+                  {project.categories.map((category: any) => (
                       <span 
-                          key={idx}
+                          key={category.id}
                           className="px-3 py-1 text-xs font-medium border-1 border-white text-white rounded-full"
                       >
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                          {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
                       </span>
                   ))}
               </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { StaggeredMenu, StaggeredMenuItem, StaggeredMenuSocialItem } from './StaggeredMenu';
 import ThemeToggle from './ThemeToggle';
 import Silk from './Silk';
@@ -23,11 +23,16 @@ interface NavLinkProps {
   children: React.ReactNode;
   isActive: boolean;
   isCompact?: boolean;
+  onHover?: (ref: HTMLAnchorElement | null) => void;
+  onHoverEnd?: () => void;
 }
 
-function NavLink({ href, children, isActive, isCompact }: NavLinkProps) {
+function NavLink({ href, children, isActive, isCompact, onHover, onHoverEnd }: NavLinkProps) {
+  const ref = useRef<HTMLAnchorElement>(null);
+
   return (
     <a 
+      ref={ref}
       href={href} 
       className={`relative transition-all duration-300 ${
         isCompact 
@@ -35,16 +40,13 @@ function NavLink({ href, children, isActive, isCompact }: NavLinkProps) {
           : 'p-2 px-4 text-xl'
       } ${
         isActive 
-          ? 'text-orange-400 link-glow ' 
+          ? 'text-orange-400 link-glow text-shadow-lg/50 text-shadow-orange' 
           : 'text-black dark:text-white hover:text-orange-400'
       }`}
+      onMouseEnter={() => onHover?.(ref.current)}
+      onMouseLeave={() => onHoverEnd?.()}
     >
       {children}
-      {isActive && (
-      <span className={`box-shadow-glow-orange absolute bottom-0 w-[90%] left-[5%] translate-x-1/2 rounded-full animate-fadeIn bg-orange-400 ${
-        isCompact ? 'h-[2px]' : 'h-[3px]'
-      }`}></span>
-      )}
     </a>
   );
 }
@@ -52,6 +54,8 @@ function NavLink({ href, children, isActive, isCompact }: NavLinkProps) {
 export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0, opacity: 0 });
+  const navContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,18 +67,35 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavHover = (element: HTMLAnchorElement | null) => {
+    if (!element || !navContainerRef.current) return;
+
+    const navRect = navContainerRef.current.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+
+    setUnderlineStyle({
+      left: elementRect.left - navRect.left + elementRect.width * 0.05,
+      width: elementRect.width * 0.9,
+      opacity: 1,
+    });
+  };
+
+  const handleNavHoverEnd = () => {
+    setUnderlineStyle({ left: 0, width: 0, opacity: 0 });
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-      <div className={`flex justify-between items-center h-[10vh] transition-all duration-300 ${
+      <div className={`relative flex justify-between items-center h-[10vh] transition-all duration-300 overflow-hidden ${
         isScrolled 
-          ? 'mt-2 px-6 mx-2 rounded-full backdrop-blur-md bg-white/50 dark:bg-neutral-900/70 shadow-lg' 
-          : 'p-4 backdrop-blur-sm bg-white/40 dark:bg-neutral-900/30'
+          ? 'md:mt-3 md:px-6 md:mx-8 md:rounded-full md:backdrop-blur-md md:bg-white/50 md:dark:bg-neutral-700/50 md:shadow-lg' 
+          : 'p-4'
       }`}>
-        <a href="/" className="flex-shrink-0">
+        <a href="/" className="flex-shrink-0 relative z-10">
           <img 
             src="/white-logo.png" 
             alt="Logo" 
-            className={`hidden dark:flex md:hidden dark:md:flex transition-all duration-300 hover:cursor-pointer p-1 ${
+            className={`hidden md:dark:flex md:dark:md:flex transition-all duration-300 hover:cursor-pointer p-1 ${
               isScrolled 
                 ? 'w-12 h-12' 
                 : 'w-16 h-16'
@@ -90,7 +111,7 @@ export default function Header() {
             }`} 
           />
         </a>
-        <nav className="w-full h-full flex items-center">
+        <nav className="w-full h-full flex items-center relative z-10">
           <div className="sm:flex md:hidden w-full">
             <StaggeredMenu
               position="right"
@@ -109,15 +130,30 @@ export default function Header() {
               isFixed={true}
             />
           </div>
-          <div className={`hidden md:flex ml-auto transition-all duration-300 gap-3 items-center ${
-            isScrolled 
-              ? 'gap-2' 
-              : 'gap-4'
-          }`}>
+          <div 
+            ref={navContainerRef}
+            className={`hidden md:flex ml-auto transition-all duration-300 gap-3 items-center relative ${
+              isScrolled 
+                ? 'gap-2' 
+                : 'gap-4'
+            }`}
+          >
+            {/* Barre unique qui se déplace */}
+            <div
+              className="absolute bottom-0 h-[3px] bg-orange-400 rounded-full transition-all duration-300 pointer-events-none"
+              style={{
+                left: `${underlineStyle.left}px`,
+                width: `${underlineStyle.width}px`,
+                opacity: underlineStyle.opacity,
+              }}
+            />
+
             <NavLink 
               href="/" 
               isActive={pathname === '/'} 
               isCompact={isScrolled}
+              onHover={handleNavHover}
+              onHoverEnd={handleNavHoverEnd}
             >
               Accueil
             </NavLink>
@@ -125,6 +161,8 @@ export default function Header() {
               href="/realisations" 
               isActive={pathname === '/realisations'}
               isCompact={isScrolled}
+              onHover={handleNavHover}
+              onHoverEnd={handleNavHoverEnd}
             >
               Mes réalisations
             </NavLink>
@@ -132,6 +170,8 @@ export default function Header() {
               href="/a-propos" 
               isActive={pathname === '/a-propos'}
               isCompact={isScrolled}
+              onHover={handleNavHover}
+              onHoverEnd={handleNavHoverEnd}
             >
               A propos
             </NavLink>

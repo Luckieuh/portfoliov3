@@ -21,7 +21,8 @@ interface Realisation {
   videoUrl?: string;
   youtubeUrl?: string;
   link?: string;
-  categories: string[];
+  categories: Array<{ id: number; name: string }>;
+  tags: Array<{ id: number; name: string }>;
   createdAt: string;
 }
 
@@ -40,21 +41,28 @@ export default function EditRealisationPage() {
 
   // Charger les catégories disponibles
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadFilters = async () => {
       try {
         setLoadingCategories(true);
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableCategories(data.map((cat: { name: string }) => cat.name));
+        const [categoriesResponse, tagsResponse] = await Promise.all([
+          fetch('/api/categories'),
+          fetch('/api/tags')
+        ]);
+        if (categoriesResponse.ok && tagsResponse.ok) {
+          const [categoriesData, tagsData] = await Promise.all([
+            categoriesResponse.json(),
+            tagsResponse.json()
+          ]);
+          setAvailableCategories(categoriesData);
+          setAvailableTags(tagsData);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des catégories:', error);
+        console.error('Erreur lors du chargement des filtres:', error);
       } finally {
         setLoadingCategories(false);
       }
     };
-    loadCategories();
+    loadFilters();
   }, []);
 
   const [formData, setFormData] = useState({
@@ -65,7 +73,8 @@ export default function EditRealisationPage() {
     videoUrl: '',
     youtubeUrl: '',
     link: '',
-    categories: [] as string[],
+    categories: [] as number[],
+    tags: [] as number[],
     createdAt: new Date().toISOString().split('T')[0],
   });
 
@@ -78,7 +87,8 @@ export default function EditRealisationPage() {
   const [draggedImageId, setDraggedImageId] = useState<number | null>(null);
   const [draggedNewImageIndex, setDraggedNewImageIndex] = useState<number | null>(null);
   const [dragType, setDragType] = useState<'existing' | 'new' | null>(null);
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<Array<{id: number; name: string}>>([]);
+  const [availableTags, setAvailableTags] = useState<Array<{id: number; name: string}>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
   // Charger les données si édition
@@ -111,7 +121,8 @@ export default function EditRealisationPage() {
         videoUrl: data.videoUrl || '',
         youtubeUrl: data.youtubeUrl || '',
         link: data.link || '',
-        categories: data.categories || [],
+        categories: data.categories.map(cat => cat.id),
+        tags: data.tags.map(tag => tag.id),
         createdAt: data.createdAt.split('T')[0],
       });
       setExistingImages(data.images);
@@ -239,13 +250,104 @@ export default function EditRealisationPage() {
       .filter((img): img is RealisationImage => img !== undefined);
   };
 
-  const handleCategoryToggle = (category: string) => {
+  const handleCategoryToggle = (categoryId: number) => {
     setFormData(prev => ({
       ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
+      categories: prev.categories.includes(categoryId)
+        ? prev.categories.filter(c => c !== categoryId)
+        : [...prev.categories, categoryId]
     }));
+  };
+
+  const handleTagToggle = (tagId: number) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tagId)
+        ? prev.tags.filter(t => t !== tagId)
+        : [...prev.tags, tagId]
+    }));
+  };
+
+  const handleAddTag = async () => {
+    const input = document.getElementById('newTagInput') as HTMLInputElement;
+    const tagName = input?.value.trim();
+
+    if (!tagName) {
+      setMessage({ type: 'error', text: 'Veuillez entrer un nom de mot-clé' });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tagName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Erreur lors de la création du mot-clé (code: ${response.status})`);
+      }
+
+      const newTag = data;
+      
+      // Ajouter le nouveau tag à la liste des disponibles
+      setAvailableTags(prev => [...prev, newTag]);
+      
+      // Sélectionner automatiquement le nouveau tag
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.id]
+      }));
+
+      // Réinitialiser l'input
+      if (input) input.value = '';
+      
+      setMessage({ type: 'success', text: `Mot-clé "${tagName}" créé et sélectionné!` });
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du tag:', error);
+      setMessage({ 
+        type: 'error', 
+        text: error instanceof Error ? error.message : 'Erreur lors de la création du mot-clé' 
+      });
+    }
+  };
+
+  const handleDeleteTag = async (tagId: number) => {
+    const tag = availableTags.find(t => t.id === tagId);
+    if (!tag) return;
+
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer le mot-clé "${tag.name}"? Cela affectera tous les projets qui l'utilisent.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/tags/${tagId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la suppression du mot-clé');
+      }
+
+      // Retirer le tag de la liste des disponibles
+      setAvailableTags(prev => prev.filter(t => t.id !== tagId));
+      
+      // Retirer le tag des tags sélectionnés du projet (s'il était sélectionné)
+      setFormData(prev => ({
+        ...prev,
+        tags: prev.tags.filter(t => t !== tagId)
+      }));
+
+      setMessage({ type: 'success', text: `Mot-clé supprimé avec succès` });
+    } catch (error) {
+      setMessage({ 
+        type: 'error', 
+        text: error instanceof Error ? error.message : 'Erreur lors de la suppression du mot-clé' 
+      });
+    }
   };
 
   const handleImagesChange = (urls: string[]) => {
@@ -315,8 +417,14 @@ export default function EditRealisationPage() {
     setMessage(null);
 
     try {
+      // Validation des images
       if (formData.imageUrls.length === 0 && getOrderedExistingImages().length === 0) {
         throw new Error('Veuillez ajouter au moins une image');
+      }
+
+      // Validation des catégories (obligatoire)
+      if (formData.categories.length === 0) {
+        throw new Error('Veuillez sélectionner au moins une catégorie');
       }
 
       // Combiner l'ordre: images existantes d'abord (dans l'ordre), puis nouvelles images
@@ -655,26 +763,113 @@ export default function EditRealisationPage() {
                 />
               </div>
 
-              {/* Catégories */}
-              <div>
+              {/* Catégories - Obligatoire */}
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">
-                  Catégories
+                  Catégories * <span className="text-xs text-red-500">(obligatoire)</span>
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {availableCategories.map((category) => (
-                    <label key={category} className="inline-flex items-center gap-2 cursor-pointer p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition">
+                    <label key={category.id} className="inline-flex items-center gap-2 cursor-pointer p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition">
                       <input
                         type="checkbox"
-                        checked={formData.categories.includes(category)}
-                        onChange={() => handleCategoryToggle(category)}
+                        checked={formData.categories.includes(category.id)}
+                        onChange={() => handleCategoryToggle(category.id)}
                         className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer"
                       />
                       <span className="text-neutral-700 dark:text-neutral-300 capitalize">
-                        {category}
+                        {category.name}
                       </span>
                     </label>
                   ))}
                 </div>
+                {formData.categories.length === 0 && (
+                  <p className="text-xs text-red-500 mt-2">
+                    ⚠️ Au moins une catégorie doit être sélectionnée
+                  </p>
+                )}
+              </div>
+
+              {/* Mots-clés - Optionnel */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">
+                  Mots-clés <span className="text-xs text-neutral-500">(optionnel)</span>
+                </label>
+                
+                {/* Ajouter un nouveau mot-clé */}
+                <div className="mb-6 p-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg border border-neutral-200 dark:border-neutral-600">
+                  <h5 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
+                    Ajouter un nouveau mot-clé
+                  </h5>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="newTagInput"
+                      placeholder="Ex: minimaliste, moderne, design..."
+                      className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-neutral-600 dark:border-neutral-500 dark:text-white text-sm"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddTag}
+                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+
+                {/* Liste des mots-clés disponibles à sélectionner */}
+                <div className="mb-4">
+                  <h5 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
+                    Mots-clés disponibles
+                  </h5>
+                  <div className="flex flex-wrap gap-3">
+                    {availableTags.length > 0 ? (
+                      availableTags.map((tag) => (
+                        <div key={tag.id} className="flex items-center gap-2 p-2 bg-neutral-100 dark:bg-neutral-700 rounded-lg">
+                          <label className="inline-flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.tags.includes(tag.id)}
+                              onChange={() => handleTagToggle(tag.id)}
+                              className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 cursor-pointer"
+                            />
+                            <span className="text-neutral-700 dark:text-neutral-300 capitalize text-sm">
+                              {tag.name}
+                            </span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTag(tag.id)}
+                            className="ml-2 p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900 rounded transition-colors"
+                            title="Supprimer ce mot-clé"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">Aucun mot-clé disponible. Créez-en un ci-dessus!</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mots-clés sélectionnés pour ce projet */}
+                {formData.tags.length > 0 && (
+                  <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      <strong>{formData.tags.length}</strong> mot-clé{formData.tags.length > 1 ? 's' : ''} sélectionné{formData.tags.length > 1 ? 's' : ''} pour ce projet
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

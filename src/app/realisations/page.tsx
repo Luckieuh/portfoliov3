@@ -14,11 +14,13 @@ export default async function Realisation() {
             images: {
                 orderBy: { createdAt: 'asc' },
             },
+            categories: true,
+            tags: true,
         },
     });
 
     // Transformer les données pour le client
-    const projects = projectsData.map(project => ({
+    const projects = projectsData.map((project: any) => ({
         ...project,
         createdAt: project.createdAt.toISOString(),
     }));
@@ -35,27 +37,9 @@ export default async function Realisation() {
                 {/* Contenu principal au-dessus */}
                 <div className='w-full relative z-10'>
                     
-                    <div className='flex justify-center w-full'>
-                        <RealisationTitle />
-                    </div>
-
-                    <div className='w-full flex gap-3 whitespace-nowrap mt-5 ml-4 mb-3'>
-                        <BtnShadow 
-                            bgColor='#FF8904'
-                            borderColor='#FF8904'
-                            img='/phone.svg'
-                            text='ME CONTACTER'
-                            textColor='#FFFFFF'
-                            link='/a-propos'
-                        />
-                        <BtnShadow 
-                            bgColor=''
-                            borderColor='#FFFFFF'
-                            img='/camera.svg'
-                            text='MON MATÉRIEL'
-                            textColor='#FFFFFF'
-                            link='/a-propos.pdf'
-                        />
+                    <div className='flex justify-center px-10 mb-8'>
+                        <img src="/real.svg" alt="" className='hidden dark:block'/>
+                        <img src="/darkreal.svg" alt="" className='block dark:hidden'/>
                     </div>
 
                     <RealisationsClient projects={projects} />

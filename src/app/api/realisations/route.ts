@@ -14,6 +14,8 @@ export async function GET() {
             { createdAt: 'asc' },
           ],
         },
+        categories: true,
+        tags: true,
       },
     });
 
@@ -31,11 +33,19 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, location, imageUrls = [], videoUrl, youtubeUrl, link, categories, createdAt } = body;
+    const { title, description, location, imageUrls = [], videoUrl, youtubeUrl, link, categories = [], tags = [], createdAt } = body;
 
     if (!title || !description) {
       return NextResponse.json(
         { error: 'Titre et description requis' },
+        { status: 400 }
+      );
+    }
+
+    // Valider que les catégories sont fournies et non vides
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return NextResponse.json(
+        { error: 'Au moins une catégorie doit être sélectionnée' },
         { status: 400 }
       );
     }
@@ -60,7 +70,12 @@ export async function POST(request: NextRequest) {
         videoUrl: videoUrl || null,
         youtubeUrl: youtubeUrl || null,
         link: link || null,
-        categories: categories || [],
+        categories: {
+          connect: categories.map((id: number) => ({ id }))
+        },
+        tags: tags.length > 0 ? {
+          connect: tags.map((id: number) => ({ id }))
+        } : undefined,
         ...(projectDate && { createdAt: projectDate }),
         images: {
           // create images and set their position according to the array index
@@ -69,6 +84,8 @@ export async function POST(request: NextRequest) {
       },
       include: {
         images: true,
+        categories: true,
+        tags: true,
       },
     });
 
