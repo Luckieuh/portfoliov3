@@ -183,16 +183,16 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                 <div className='flex justify-center w-full max-w-[95%] gap-6 items-start'>
                     {/* Recherche et filtres */}
                     <div className='flex-1 flex flex-col sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px]'>
-                        <div className='flex flex-row justify-between text-end mb-3'>
+                        <div className='flex justify-between items-bottom mb-3'>
                             <BtnShadow 
                                 bgColor='#FF8904'
                                 borderColor='#FF8904'
                                 img='/phone.svg'
                                 text='ME CONTACTER'
                                 textColor='#FFFFFF'
-                                link='/a-propos'
+                                link='#contact'
                             />
-                            <p className='text-2xl md:text-4xl font-extrabold text-neutral-800 dark:text-white'>
+                            <p className='text-2xl md:text-4xl font-black text-neutral-800 dark:text-white'>
                                 {filteredAndSortedProjects.length} RÉSULTAT{filteredAndSortedProjects.length >= 2 ? 'S' : ''}
                             </p>
                         </div>
@@ -345,7 +345,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                         {/* Bouton Réinitialiser */}
                         <button 
                             onClick={handleReset}
-                            className='text-black bg-white outline-neutral-400 outline dark:outline-none px-4 py-2 rounded-full hover:bg-neutral-200 hover:cursor-pointer transition-colors whitespace-nowrap'
+                            className='text-neutral-800 bg-white outline-neutral-400 outline dark:outline-none px-4 py-2 rounded-full hover:bg-neutral-200 hover:cursor-pointer transition-colors whitespace-nowrap'
                         >
                             Réinitialiser
                         </button>

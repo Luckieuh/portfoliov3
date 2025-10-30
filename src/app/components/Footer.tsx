@@ -51,7 +51,7 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className='flex flex-col md:text-end justify-center mt-5 md:mt-0 md:mr-5'>
+                <div className='flex flex-col md:text-end justify-center mt-5 md:mt-0'>
                     <div className='mb-8'>
                         <div className='space-x-5 mb-1'>
                             <a href='/'>Accueil</a>
@@ -69,7 +69,6 @@ export default function Footer() {
                         <p>Site web designé sur <a href="https://www.figma.com/" className='font-bold'>Figma</a> et développé avec <a href='https://nextjs.org/' className='font-bold'>Next.js</a> par Lucas Thomassin </p>
                     </div>
                 </div>
-                <img src='/footer1.svg' className='absolute top-0 left-[65%] sm:left-[55%] md:left-[35%] lg:left-[25%] h-[15%] sm:h-[20%] lg:h-[45%]'/>
                 <img src='/footer2.svg' className='absolute bottom-0 right-0 hidden md:block sm:h-[48%] md:h-[40%]'/>    
             </footer>
     );

@@ -44,8 +44,9 @@ export default async function Realisation() {
                     </div>
 
                     <RealisationsClient projects={projects} />
-                    
-                    <ContactForm />
+                    <div id='contact'>
+                        <ContactForm />
+                    </div>
                     <Footer />
                 </div>
             </div>

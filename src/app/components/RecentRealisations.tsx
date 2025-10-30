@@ -102,33 +102,38 @@ export default function RecentRealisations({ realisations }: RecentRealisationsP
                 )}
               </div>
               <div className="mt-2 p-2 rounded-b-lg">
-                <h3 className="text-xl font-bold text-neutral-800 dark:text-white truncate">
+                <h3 className="text-2xl font-bold text-neutral-800 dark:text-white duration-500 dark:group-hover:text-orange-500 group-hover:text-orange-500 transition-colors">
                   {realisation.title}
                 </h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+                <p className="group-hover:text-orange-400 dark:group-hover:text-orange-200 duration-300">
                   {realisation.description}
                 </p>
-                <div className="flex items-center justify-between gap-2 mb-2 mt-2">
-                  {realisation.categories.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {realisation.categories.map((category) => (
-                        <span 
-                          key={category.id}
-                          className="px-2 py-0.5 text-xs font-medium border-1 border-white text-white rounded-full"
-                        >
-                          {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
-                    {realisation.createdAt.toLocaleDateString('fr-FR', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                    })}
-                  </span>
-                </div>
+                  <div className="flex items-end justify-between gap-2 min-h-[40px]">
+                      
+                      
+                      {/* Mots-clés */}
+                      {realisation.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                              {realisation.tags.map((tag) => (
+                                  <span 
+                                      key={tag.id}
+                                      className="px-2.5 py-1 text-xs font-medium group-hover:bg-orange-500 dark:group-hover:bg-orange-300 border-1 border-neutral-600 dark:group-hover:border-orange-700 group-hover:border-orange-600 transition-colors dark:border-white text-neutral-600 dark:group-hover:text-neutral-800 group-hover:text-neutral-200 dark:text-white rounded-full"
+                                  >
+                                      {tag.name}
+                                  </span>
+                              ))}
+                          </div>
+                      )}
+                          
+                      
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap ml-auto">
+                          {new Date(realisation.createdAt).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                          })}
+                      </span>
+                  </div>
 
               </div>
             </div>

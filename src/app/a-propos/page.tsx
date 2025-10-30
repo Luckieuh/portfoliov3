@@ -49,10 +49,10 @@ export default function Propos() {
                 </div>
             </div>
 
-            <div className='flex flex-col lg:flex-row justify-center space-x-52'>
+            <div className='flex flex-col lg:flex-row justify-center'>
 
-                <div className='w-[90%] lg:w-[40%] flex flex-col pb-5 relative left-1/2 transform -translate-x-1/2 lg:left-0 lg:translate-x-0'>
-                    <div className='ml-5 mb-5 scale-110'>
+                <div className='w-[90%] lg:w-[40%] flex flex-col pb-5 mx-auto'>
+                    <div className='mb-5 scale-110'>
                         <Experience />
                     </div>
                     <div className='mt-2'>
@@ -71,7 +71,7 @@ export default function Propos() {
                     </div>
 
 
-                    <div className='ml-5 mb-5 scale-110 mt-15'>
+                    <div className='mb-5 scale-110 mt-15'>
                         <Parcours />
                     </div>
                     <div className='mt-5'>
@@ -132,11 +132,11 @@ export default function Propos() {
                 </div>
 
 
-                <div className='mr-5 pb-5 w-[90%] lg:w-[40vw] left-1/2 transform -translate-x-1/2 lg:left-0 lg:translate-x-0 relative flex flex-col lg:items-start text-center lg:text-left mt-10 lg:mt-0'>
+                <div className='pb-5 w-[90%] lg:w-[40vw] flex flex-col lg:items-start text-center lg:text-left mt-10 lg:mt-0 mx-auto'>
                     <div className='scale-110 mb-5 ml-5 '>
                         <Outils />
                     </div>
-                    <div className='box-shadow-glow-orange border-2 border-orange-400 w-fit p-2 space-y-5'>
+                    <div className='box-shadow-glow-orange border-2 border-orange-400 lg:w-fit p-2 space-y-5'>
                         {/* <div className='absolute fill-white right-20 bottom-[35%] rotate-90 scale-110'>
                             <CutSphere />
                         </div> */}

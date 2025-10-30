@@ -5,7 +5,6 @@ import Footer from './components/Footer';
 import LogoLoop from './components/LogoLoop';
 import RecentRealisations from './components/RecentRealisations';
 import ContactForm from './components/ContactForm';
-import Link from 'next/link';
 import prisma from '../../lib/prisma';
 import { DynamicBanner, DynamicProfileImage } from './components/DynamicImages';
 import BtnShadow from './components/BtnShadow';
@@ -95,18 +94,35 @@ export default async function Home() {
                         </div>
 
                         {/* Section principale avec l'image et le texte */}
-                        <div className='relative w-full lg:h-fit bg-neutral-300 dark:bg-black flex justify-center items-start flex-col md:flex-row pt-3 pb-6'>
+                        <div className='relative w-full lg:h-fit bg-neutral-300 dark:bg-black flex justify-center items-start flex-col md:flex-row pt-3 pb-6 mx-auto'>
                             <div className='z-10 h-full flex justify-center w-full md:w-auto py-8 md:py-0'> 
                                 <DynamicProfileImage />
                             </div>
-                            <div className='z-10 flex h-full flex-col justify-between md:ml-6 md:px-0 mr-5 w-[80%] md:w-auto relative md:left-0 left-[50%] md:translate-x-0 translate-x-[-50%]'>
+                            <div className='z-10 flex h-full flex-col justify-between md:px-0 mr-5 w-[80%] md:w-auto relative md:left-0 left-[50%] md:translate-x-0 translate-x-[-50%]'>
                                 <div> 
                                     <h1 className='text-4xl text-black dark:text-white font-medium'>Lucas</h1>
                                     <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>
                                     <div className='space-x-3 space-y-2'>
-                                        <a className='hover:cursor-pointer' href="https://www.google.com/maps/place/Angoul%C3%AAme,+France/@45.6411533,0.0861775,12z/data=!4m6!3m5!1s0x47fe2d85032bc499:0x405d39260eec0f0!8m2!3d45.6488766!4d0.1567288!16zL20vMGxneV8?hl=en-US&entry=ttu&g_ep=EgoyMDI1MTAyNy4wIKXMDSoASAFQAw%3D%3D">
-                                            <button className='hover:cursor-pointer bg-orange-400/40 text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
-                                                <img src='/localisation.svg' className='h-5 mb-1 inline-block mr-2'/>
+                                        <a className='hover:cursor-pointer group' href="https://www.google.com/maps/place/Angoul%C3%AAme,+France/@45.6411533,0.0861775,12z/data=!4m6!3m5!1s0x47fe2d85032bc499:0x405d39260eec0f0!8m2!3d45.6488766!4d0.1567288!16zL20vMGxneV8?hl=en-US&entry=ttu&g_ep=EgoyMDI1MTAyNy4wIKXMDSoASAFQAw%3D%3D">
+                                            <button className='hover:cursor-pointer bg-orange-400/40 text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400 relative overflow-hidden'>
+                                                {/* SVG Localisation - visible par défaut, caché au hover */}
+                                                <img 
+                                                  src='/localisation.svg' 
+                                                  className='h-5 mb-1 inline-block mr-2 transition-all duration-300 group-hover:opacity-0 group-hover:-translate-x-2 group-hover:scale-75'
+                                                />
+                                                {/* SVG Flèche - caché par défaut, visible au hover */}
+                                                <svg 
+                                                  className='h-5 mb-1 inline-block mr-2 absolute opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:-translate-x-5 -translate-x-2 pr-2 group-hover:scale-100 scale-75'
+                                                  viewBox="0 0 24 24" 
+                                                  fill="none" 
+                                                  stroke="currentColor"
+                                                  strokeWidth="2"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                >
+                                                  <line x1="5" y1="19" x2="19" y2="5" />
+                                                  <polyline points="10 5 19 5 19 14" />
+                                                </svg>
                                                 Angoulême
                                             </button>
                                         </a>
@@ -128,9 +144,19 @@ export default async function Home() {
                                         Étudiant en BUT MMI à Angoulême, je suis passionné de vidéo et photo.
                                     </p>
                                     <div className='flex justify-start mb-2'> 
-                                    <a href="./a-propos" className="btn2 inline-flex items-center px-8 py-3 relative border-2 rounded-md border-white text-black leading-none overflow-hidden bg-white hover:scale-110 duration-500 text-xl" type="button">
+                                    <a href="./a-propos" className="btn2 group inline-flex items-center px-8 py-3 relative border-2 rounded-md border-white text-black hover:text-orange-400 leading-none overflow-hidden bg-white hover:scale-110 duration-500 text-xl" type="button">
                                         En savoir plus
-                                        <img src='/upright.png' className='h-4 inline-block ml-3'/>
+                                        <svg 
+                                            className='h-5 inline-block stroke-black relative bottom-0 mr-2 pr-2 scale-85 group-hover:stroke-orange-400 transition-all ease-in-out duration-500'
+                                            viewBox="0 0 24 24" 
+                                            fill="none" 
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <line x1="5" y1="19" x2="19" y2="5" />
+                                            <polyline points="10 5 19 5 19 14" />
+                                        </svg>                                    
                                     </a>
                                 </div>
                                 </div>

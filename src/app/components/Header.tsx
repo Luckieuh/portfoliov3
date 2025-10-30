@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { StaggeredMenu, StaggeredMenuItem, StaggeredMenuSocialItem } from './StaggeredMenu';
 import ThemeToggle from './ThemeToggle';
-import Silk from './Silk';
 
 const menuItems = [
   { label: 'Accueil', ariaLabel: "Aller à la page d'accueil", link: '/' },
