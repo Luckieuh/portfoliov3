@@ -8,9 +8,8 @@ import Silk from './Silk';
 
 const menuItems = [
   { label: 'Accueil', ariaLabel: "Aller à la page d'accueil", link: '/' },
-  { label: 'A propos', ariaLabel: 'En apprendre plus sur moi', link: '/a-propos' },
   { label: 'Projets', ariaLabel: 'Voir mes réalisations', link: '/realisations' },
-  { label: 'Contact', ariaLabel: 'Me contacter', link: '/contact' }
+  { label: 'A propos', ariaLabel: 'En apprendre plus sur moi', link: '/a-propos' },
 ];
 
 const socialItems: StaggeredMenuSocialItem[] = [
@@ -92,24 +91,63 @@ export default function Header() {
           : 'p-4'
       }`}>
         <a href="/" className="flex-shrink-0 relative z-10">
+          {/* Logo en mode sombre (visible toujours en dark mode) */}
           <img 
             src="/white-logo.png" 
             alt="Logo" 
-            className={`hidden md:dark:flex md:dark:md:flex transition-all duration-300 hover:cursor-pointer p-1 ${
+            className={`hidden md:dark:block transition-all duration-300 hover:cursor-pointer p-1 ${
               isScrolled 
                 ? 'w-12 h-12' 
                 : 'w-16 h-16'
             }`} 
           />
-          <img 
-            src="/dark-logo.png" 
-            alt="Logo" 
-            className={`hidden dark:hidden md:flex transition-all duration-300 hover:cursor-pointer p-1 ${
-              isScrolled 
-                ? 'w-12 h-12' 
-                : 'w-16 h-16'
-            }`} 
-          />
+          
+          {/* Logo clair sur page d'accueil (visible par défaut, disparaît au scroll) */}
+          {pathname === '/' && (
+            <img 
+              src="/white-logo.png" 
+              alt="Logo" 
+              className={`hidden dark:hidden md:block transition-all duration-300 hover:cursor-pointer p-1 ${
+                isScrolled 
+                  ? 'opacity-0' 
+                  : 'opacity-100'
+              } ${
+                isScrolled 
+                  ? 'w-12 h-12' 
+                  : 'w-16 h-16'
+              }`} 
+            />
+          )}
+          
+          {/* Logo dark sur page d'accueil (invisible par défaut, visible au scroll) */}
+          {pathname === '/' && (
+            <img 
+              src="/dark-logo.png" 
+              alt="Logo" 
+              className={`hidden dark:hidden md:block transition-all duration-300 hover:cursor-pointer p-1 absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 ${
+                isScrolled 
+                  ? 'opacity-100' 
+                  : 'opacity-0 pointer-events-none'
+              } ${
+                isScrolled 
+                  ? 'w-12 h-12' 
+                  : 'w-16 h-16'
+              }`} 
+            />
+          )}
+          
+          {/* Logo dark sur autres pages */}
+          {pathname !== '/' && (
+            <img 
+              src="/dark-logo.png" 
+              alt="Logo" 
+              className={`hidden dark:hidden md:block transition-all duration-300 hover:cursor-pointer p-1 ${
+                isScrolled 
+                  ? 'w-12 h-12' 
+                  : 'w-16 h-16'
+              }`} 
+            />
+          )}
         </a>
         <nav className="w-full h-full flex items-center relative z-10">
           <div className="sm:flex md:hidden w-full">

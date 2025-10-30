@@ -4,6 +4,7 @@ import RealisationTitle from '../components/Realisation';
 import RealSVG from '../components/Realsvg';
 import BtnShadow from '../components/BtnShadow';
 import RealisationsClient from './RealisationsClient';
+import ContactForm from '../components/ContactForm';
 import prisma from '../../../lib/prisma';
 
 export default async function Realisation() {
@@ -44,6 +45,7 @@ export default async function Realisation() {
 
                     <RealisationsClient projects={projects} />
                     
+                    <ContactForm />
                     <Footer />
                 </div>
             </div>

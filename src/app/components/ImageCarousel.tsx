@@ -78,7 +78,7 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
       <div className="relative w-full rounded-lg overflow-hidden group">
         {/* Images */}
         <div 
-          className="relative w-full aspect-video bg-neutral-900 cursor-pointer"
+          className="relative w-full aspect-video bg-neutral-200 dark:bg-neutral-900 cursor-pointer"
           onClick={() => openLightbox(currentIndex)}
         >
           {images.map((image, index) => (

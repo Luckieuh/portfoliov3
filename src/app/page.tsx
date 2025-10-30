@@ -4,6 +4,7 @@ import Hole from './components/Hole';
 import Footer from './components/Footer';
 import LogoLoop from './components/LogoLoop';
 import RecentRealisations from './components/RecentRealisations';
+import ContactForm from './components/ContactForm';
 import Link from 'next/link';
 import prisma from '../../lib/prisma';
 import { DynamicBanner, DynamicProfileImage } from './components/DynamicImages';
@@ -103,10 +104,13 @@ export default async function Home() {
                                     <h1 className='text-4xl text-black dark:text-white font-medium'>Lucas</h1>
                                     <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>
                                     <div className='space-x-3 space-y-2'>
-                                        <button className='bg-orange-400/40 text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
-                                            <img src='/localisation.svg' className='h-5 mb-1 inline-block mr-2'/>
-                                            Angoulême
-                                        </button>
+                                        <a className='hover:cursor-pointer' href="https://www.google.com/maps/place/Angoul%C3%AAme,+France/@45.6411533,0.0861775,12z/data=!4m6!3m5!1s0x47fe2d85032bc499:0x405d39260eec0f0!8m2!3d45.6488766!4d0.1567288!16zL20vMGxneV8?hl=en-US&entry=ttu&g_ep=EgoyMDI1MTAyNy4wIKXMDSoASAFQAw%3D%3D">
+                                            <button className='hover:cursor-pointer bg-orange-400/40 text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
+                                                <img src='/localisation.svg' className='h-5 mb-1 inline-block mr-2'/>
+                                                Angoulême
+                                            </button>
+                                        </a>
+
                                         <button className='outline-orange-400 bg-orange-800/60 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300 '>
                                             Cadrage
                                         </button>
@@ -148,7 +152,18 @@ export default async function Home() {
 
                         {/* Grille des 3 dernières réalisations */}
                         <RecentRealisations realisations={realisations} />
-    
+                            <a href="/realisations" className="flex justify-center mb-10">
+                                <BtnShadow
+                                    bgColor='#ff8a04d9'
+                                    borderColor='#FF8904'
+                                    img='/allReal.svg'
+                                    text='Voir toutes mes réalisations'
+                                    textColor='#FFFFFF'
+                                    link='/realisations'
+                                />
+                            </a>
+                        <ContactForm />
+                            
             <Footer />
         </div>
     );

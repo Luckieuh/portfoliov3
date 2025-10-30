@@ -3,26 +3,18 @@ import { DynamicFooterProfileImage } from './DynamicImages';
 
 export default function Footer() {
     return (
-            <footer className='w-full min-h-fit bottom-0 relative flex flex-col lg:flex-row bg-black justify-between mt-5 pt-4 text-white pb-8 px-4 lg:px-12 space-x-4'>
+            <footer className='w-full min-h-fit bottom-0 relative flex flex-col md:flex-row bg-black justify-between pt-4 text-white pb-8 px-4 lg:px-12 space-x-4'>
                 <div className='h-fit w-full md:w-[50%] mb-6 lg:mb-0'>
                     <div className='flex flex-row w-fit'>
                         <DynamicFooterProfileImage />
                         <div className='ml-5 h-fit'>
                             <p className='text-xl sm:text-3xl font-bold -mb-1 text-orange-400'>Lucas</p>
                             <p className='text-2xl sm:text-4xl font-extrabold text-orange-400'>Thomassin</p>
-                            <p className='text-lg sm:text-xl mb-4 md:whitespace-nowrap'>Étudiant passionné par la vidéo et la photo.</p>
+                            <p className='text-lg sm:text-xl mb-4 hidden sm:block'>Étudiant passionné par la vidéo et la photo.</p>
                         </div>
                     </div>
 
-                    <div className='flex flex-col lg:flex-row gap-3 mt-4'>
-                        <BtnShadow
-                            bgColor='#575757'
-                            borderColor='#FFFFFF'
-                            img='/mail.svg'
-                            text='lucas2.thom@gmail.com'
-                            textColor='#FFFFFF'
-                            link='https://mail.google.com/mail/u/0/#inbox?compose=CllgCJlGTfLNZftfhhqBCpvBrZPsfSznPdZxqwvhFgxcvTQkptZRGhvpvkxpwskPnjzrKwjkcQB'
-                        />
+                    <div className='flex flex-row flex-wrap gap-3 mt-4'>
                         <BtnShadow
                             bgColor='#5C1742'
                             borderColor='#FF00E5'
@@ -39,10 +31,27 @@ export default function Footer() {
                             textColor='#0037FF'
                             link='https://www.linkedin.com/in/lucas-thomassin-7ba03634a/'
                         />
+                        <BtnShadow
+                            bgColor='#db0700d0'
+                            borderColor='#b30e08ff'
+                            img='/Youtube.svg'
+                            className='scale-80'
+                            text='Youtube'
+                            textColor='#FFFFFF'
+                            link='https://www.youtube.com/@LucsarTsn'
+                        />
+                        <BtnShadow
+                            bgColor='#575757'
+                            borderColor='#FFFFFF'
+                            img='/mail.svg'
+                            text='lucas2.thom@gmail.com'
+                            textColor='#FFFFFF'
+                            link='https://mail.google.com/mail/u/0/#inbox?compose=CllgCJlGTfLNZftfhhqBCpvBrZPsfSznPdZxqwvhFgxcvTQkptZRGhvpvkxpwskPnjzrKwjkcQB'
+                        />
                     </div>
                 </div>
 
-                <div className='flex flex-col lg:text-end justify-center mt-5 lg:mr-5'>
+                <div className='flex flex-col md:text-end justify-center mt-5 md:mt-0 md:mr-5'>
                     <div className='mb-8'>
                         <div className='space-x-5 mb-1'>
                             <a href='/'>Accueil</a>
@@ -61,7 +70,7 @@ export default function Footer() {
                     </div>
                 </div>
                 <img src='/footer1.svg' className='absolute top-0 left-[65%] sm:left-[55%] md:left-[35%] lg:left-[25%] h-[15%] sm:h-[20%] lg:h-[45%]'/>
-                <img src='/footer2.svg' className='absolute bottom-0 right-0 h-[25%] sm:h-[48%] md:h-[40%]'/>    
+                <img src='/footer2.svg' className='absolute bottom-0 right-0 hidden md:block sm:h-[48%] md:h-[40%]'/>    
             </footer>
     );
 }

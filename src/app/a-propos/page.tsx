@@ -4,6 +4,8 @@ import Experience from '../components/Experience';
 import Outils from '../components/Outils';
 import BtnShadow from '../components/BtnShadow';
 import Parcours from '../components/Parcours';
+import ContactForm from '../components/ContactForm';
+import Footer from '../components/Footer';
 
 export default function Propos() {
     return (
@@ -227,6 +229,9 @@ export default function Propos() {
 
 
             </div>
+            
+            <ContactForm />
+            <Footer />
         </div>
     );
 }
