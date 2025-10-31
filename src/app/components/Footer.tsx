@@ -59,8 +59,8 @@ export default function Footer() {
                             <a href='/realisations'>Mes réalisations</a>
                         </div>
                         <div className='space-x-5'>
-                            <a href='/'>Mentions légales</a>
-                            <a href='/'>Politique de confidentialité</a>
+                            <a href='/mentions-legales'>Mentions légales</a>
+                            <a href='/politique'>Politique de confidentialité</a>
                         </div>
                     </div>
                     <div>
@@ -69,7 +69,7 @@ export default function Footer() {
                         <p>Site web designé sur <a href="https://www.figma.com/" className='font-bold'>Figma</a> et développé avec <a href='https://nextjs.org/' className='font-bold'>Next.js</a> par Lucas Thomassin </p>
                     </div>
                 </div>
-                <img src='/footer2.svg' className='absolute bottom-0 right-0 hidden md:block sm:h-[48%] md:h-[40%]'/>    
+                <img src='/footer2.svg' alt='sphère' className='absolute bottom-0 right-0 hidden md:block sm:h-[48%] md:h-[40%]'/>    
             </footer>
     );
 }

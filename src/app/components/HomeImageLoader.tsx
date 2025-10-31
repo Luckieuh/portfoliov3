@@ -66,7 +66,7 @@ export default function HomeImageLoader({ showProfile = false }: HomeImageLoader
           <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>
           <div className='space-x-3 space-y-2'>
             <button className='bg-orange-400/40 text-black dark:text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
-              <img src='/location.svg' className='h-5 mb-1 inline-block mr-2'/>
+              <img src='/location.svg' alt='localisation' className='h-5 mb-1 inline-block mr-2'/>
               Angoulême
             </button>
             <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
@@ -89,7 +89,7 @@ export default function HomeImageLoader({ showProfile = false }: HomeImageLoader
         <div className='flex justify-start mb-2'> 
           <a href="./a-propos" className="btn2 inline-flex items-center px-8 py-3 relative border-2 rounded-md border-white text-black leading-none overflow-hidden bg-white hover:scale-110 duration-500 text-xl" type="button">
             En savoir plus
-            <img src='/upright.png' className='h-4 inline-block ml-3'/>
+            <img src='/upright.png' alt='Flèche vers le coin supérieur droit' className='h-4 inline-block ml-3'/>
           </a>
         </div>
       </div>

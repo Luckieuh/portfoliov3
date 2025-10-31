@@ -38,7 +38,7 @@ function NavLink({ href, children, isActive, isCompact, onHover, onHoverEnd }: N
           : 'p-2 px-4 text-xl'
       } ${
         isActive 
-          ? 'text-orange-400 link-glow text-shadow-lg/50 text-shadow-orange' 
+          ? 'text-orange-400 link-glow text-shadow-lg/50 text-shadow-black' 
           : 'text-black dark:text-white hover:text-orange-400'
       }`}
       onMouseEnter={() => onHover?.(ref.current)}

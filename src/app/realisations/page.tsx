@@ -39,8 +39,8 @@ export default async function Realisation() {
                 <div className='w-full relative z-10'>
                     
                     <div className='flex justify-center px-10 mb-8'>
-                        <img src="/real.svg" alt="" className='hidden dark:block'/>
-                        <img src="/darkreal.svg" alt="" className='block dark:hidden'/>
+                        <img src="/real.svg" alt="Mes réalisations" className='hidden dark:block'/>
+                        <img src="/darkreal.svg" alt="Mes réalisations" className='block dark:hidden'/>
                     </div>
 
                     <RealisationsClient projects={projects} />

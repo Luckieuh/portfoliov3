@@ -75,11 +75,10 @@ export default async function Home() {
                         <div className='carousel flex h-[7vh] items-center bg-neutral-300 dark:bg-black overflow-hidden'>
                             <LogoLoop 
                             items={[
-                                { text: "Montage vidéo" },
-                                { text: "Retouche photo" },
                                 { text: "Photographie" },
                                 { text: "Cadrage" },
-                                { text: "Shooting" },
+                                { text: "Montage vidéo" },
+                                { text: "Retouche photo" },
                                 { text: "Création numérique" },
                                 { text: "Communication" },
                                 { src: "/star.svg", alt: "star" }
@@ -109,6 +108,7 @@ export default async function Home() {
                                                 <img 
                                                   src='/localisation.svg' 
                                                   className='h-5 mb-1 inline-block mr-2 transition-all duration-300 group-hover:opacity-0 group-hover:-translate-x-2 group-hover:scale-75'
+                                                  alt='localisation'
                                                 />
                                                 {/* SVG Flèche - caché par défaut, visible au hover */}
                                                 <svg 

@@ -473,7 +473,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                         ) : (
                             filteredAndSortedProjects.map((project) => (
                                 <Link key={project.id} href={`/realisations/${project.id}`} className="block group">
-                                    <div className="overflow-hidden bg-zinc-200 border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 rounded-xl cursor-pointer transition-all duration-300">
+                                    <div className="overflow-hidden bg-zinc-200 border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 rounded-xl cursor-pointer transition-all duration-400">
                                         <div className="relative w-full aspect-video rounded-t-xl overflow-hidden">
                                             {/* Miniature YouTube (prioritaire) */}
                                             {project.youtubeUrl && (
@@ -572,7 +572,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                         
                                         <div className="px-5 py-2">
                                             <div className='flex items-center justify-between'>
-                                            <h3 className="text-2xl font-bold text-neutral-800 dark:text-white dark:group-hover:text-orange-500 group-hover:text-orange-500 transition-colors">
+                                            <h3 className="text-2xl font-bold text-neutral-800 dark:text-white dark:group-hover:text-orange-500 group-hover:text-orange-500 transition-colors duration-300">
                                                 {project.title}
                                             </h3>
                                             {project.location && (
@@ -582,7 +582,7 @@ export default function RealisationsClient({ projects }: RealisationsClientProps
                                             )}
                                         </div>
 
-                                            <p className='group-hover:text-orange-400 dark:group-hover:text-orange-200'>
+                                            <p className='group-hover:text-orange-400 dark:group-hover:text-orange-200 duration-400'>
                                                 {project.description.length > 100
                                                     ? project.description.slice(0, 100) + '...'
                                                     : project.description
