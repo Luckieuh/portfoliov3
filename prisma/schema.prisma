@@ -35,6 +35,8 @@ model Realisation {
   tags        Tag[]
   images      RealisationImage[]
   createdAt   DateTime             @default(now())
+
+  @@map("Realisations")
 }
 
 model RealisationImage {
