@@ -7,6 +7,8 @@ import RealisationsClient from './RealisationsClient';
 import ContactForm from '../components/ContactForm';
 import prisma from '../../../lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Realisation() {
     // Récupérer les projets depuis la base de données
     const projectsData = await prisma.realisation.findMany({
