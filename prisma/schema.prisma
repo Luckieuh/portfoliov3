@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -10,48 +16,48 @@ datasource db {
 }
 
 model Category {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  createdAt   DateTime      @default(now())
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  createdAt    DateTime      @default(now())
   realisations Realisation[]
 }
 
 model Tag {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  createdAt   DateTime      @default(now())
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  createdAt    DateTime      @default(now())
   realisations Realisation[]
 }
 
 model Realisation {
-  id          Int                  @id @default(autoincrement())
-  title       String
+  id         Int                 @id @default(autoincrement())
+  title      String
   description String
-  location    String?
-  videoUrl    String?
-  youtubeUrl  String?
-  link        String?
-  categories  Category[]
-  tags        Tag[]
-  images      RealisationImage[]
-  createdAt   DateTime             @default(now())
+  location   String?
+  videoUrl   String?
+  youtubeUrl String?
+  link       String?
+  categories Category[]
+  tags       Tag[]
+  images     RealisationImage[]
+  createdAt  DateTime            @default(now())
 
   @@map("Realisations")
 }
 
 model RealisationImage {
-  id             Int         @id @default(autoincrement())
-  url            String
-  position       Int         @default(0)
-  realisation    Realisation @relation(fields: [realisationId], references: [id], onDelete: Cascade)
-  realisationId  Int
-  createdAt      DateTime    @default(now())
+  id            Int         @id @default(autoincrement())
+  url           String
+  position      Int         @default(0)
+  realisation   Realisation @relation(fields: [realisationId], references: [id], onDelete: Cascade)
+  realisationId Int
+  createdAt     DateTime    @default(now())
 }
 
 model admin {
-  id          Int       @id @default(autoincrement())
-  username    String    @unique
-  password    String
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  password String
 }
 
 model SiteImage {
