@@ -4,7 +4,6 @@ import RealisationTitle from '../components/Realisation';
 import RealSVG from '../components/Realsvg';
 import BtnShadow from '../components/BtnShadow';
 import RealisationsClient from './RealisationsClient';
-import ContactForm from '../components/ContactForm';
 import prisma from '../../../lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -22,36 +21,64 @@ export default async function Realisation() {
         },
     });
 
-    // Transformer les données pour le client
-    const projects = projectsData.map((project: any) => ({
-        ...project,
+    // Convertir les données au format attendu par le composant
+    const projects = projectsData.map(project => ({
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        imageUrl: project.images && project.images.length > 0 ? project.images[0].url : null,
+        videoUrl: project.videoUrl,
+        link: project.link,
+        categories: project.categories.map(cat => cat.name),
+        tags: project.tags,
+        images: project.images,
+        location: project.location,
+        youtubeUrl: project.youtubeUrl,
         createdAt: project.createdAt.toISOString(),
     }));
     
     return (
-        <>
-            <Header />
-            <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 relative pt-[10vh]">
-                {/* SVG en arrière-plan */}
-                <div className='absolute inset-0 pointer-events-none'>
-                    <RealSVG />
-                </div>
+        <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 overflow-x-hidden relative">
+            {/* SVG en arrière-plan */}
 
-                {/* Contenu principal au-dessus */}
-                <div className='w-full relative z-10'>
-                    
-                    <div className='flex justify-center px-10 mb-8'>
-                        <img src="/real.svg" alt="Mes réalisations" className='hidden dark:block'/>
-                        <img src="/darkreal.svg" alt="Mes réalisations" className='block dark:hidden'/>
-                    </div>
-
-                    <RealisationsClient projects={projects} />
-                    <div id='contact'>
-                        <ContactForm />
-                    </div>
-                    <Footer />
-                </div>
+            <h1>TEST</h1>
+            <div className='absolute w-full h-full'>
+                <RealSVG />
             </div>
-        </>
+
+            {/* Contenu principal au-dessus */}
+            <div className='w-full relative z-10'>
+                <Header />
+                
+                <div className='w-full h-[10vh]'></div>
+
+                <div className='flex justify-center w-full'>
+                    <RealisationTitle />
+                </div>
+
+                <div className='w-full flex gap-3 whitespace-nowrap mt-5 ml-4 mb-3'>
+                    <BtnShadow 
+                        bgColor='#FF8904'
+                        borderColor='#FF8904'
+                        img='/phone.svg'
+                        text='ME CONTACTER'
+                        textColor='#FFFFFF'
+                        link='/a-propos'
+                    />
+                    <BtnShadow 
+                        bgColor=''
+                        borderColor='#FFFFFF'
+                        img='/camera.svg'
+                        text='MON MATÉRIEL'
+                        textColor='#FFFFFF'
+                        link='/a-propos.pdf'
+                    />
+                </div>
+
+                <RealisationsClient projects={projects} />
+                
+                <Footer />
+            </div>
+        </div>
     )
 }
