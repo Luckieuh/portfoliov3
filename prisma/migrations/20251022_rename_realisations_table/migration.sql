@@ -1,0 +1,3 @@
+-- This migration was manually resolved and marked as applied
+-- The table rename was already applied in production
+-- This migration record was missing locally but existed in the production database
