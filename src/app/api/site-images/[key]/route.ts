@@ -6,10 +6,10 @@ import { randomUUID } from 'crypto';
 
 export async function GET(
   request: Request,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
   try {
-    const { key } = params;
+    const { key } = await params;
     
     let image = await prisma.siteImage.findUnique({
       where: { key },
@@ -35,10 +35,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
   try {
-    const { key } = params;
+    const { key } = await params;
     const contentType = request.headers.get('content-type') || '';
     
     let fileUrl: string;
