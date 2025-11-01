@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const realisation = await prisma.realisation.findUnique({
+    const realisation = await prisma.realisations.findUnique({
       where: { id },
     });
 
@@ -57,7 +57,7 @@ export async function PUT(
     const body = await request.json();
     const { title, description, location, videoUrl, youtubeUrl, link, categories, tags } = body;
 
-    const realisation = await prisma.realisation.update({
+    const realisation = await prisma.realisations.update({
       where: { id },
       data: {
         title,
@@ -97,7 +97,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.realisation.delete({
+    await prisma.realisations.delete({
       where: { id },
     });
 

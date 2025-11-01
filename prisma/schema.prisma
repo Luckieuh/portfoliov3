@@ -16,20 +16,20 @@ datasource db {
 }
 
 model Category {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  createdAt    DateTime      @default(now())
-  realisations Realisation[]
+  id           Int             @id @default(autoincrement())
+  name         String          @unique
+  createdAt    DateTime        @default(now())
+  realisations Realisations[]
 }
 
 model Tag {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  createdAt    DateTime      @default(now())
-  realisations Realisation[]
+  id           Int             @id @default(autoincrement())
+  name         String          @unique
+  createdAt    DateTime        @default(now())
+  realisations Realisations[]
 }
 
-model Realisation {
+model Realisations {
   id         Int                 @id @default(autoincrement())
   title      String
   description String
@@ -41,17 +41,15 @@ model Realisation {
   tags       Tag[]
   images     RealisationImage[]
   createdAt  DateTime            @default(now())
-
-  @@map("Realisations")
 }
 
 model RealisationImage {
-  id            Int         @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   url           String
-  position      Int         @default(0)
-  realisation   Realisation @relation(fields: [realisationId], references: [id], onDelete: Cascade)
+  position      Int          @default(0)
+  realisation   Realisations @relation(fields: [realisationId], references: [id], onDelete: Cascade)
   realisationId Int
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime     @default(now())
 }
 
 model admin {

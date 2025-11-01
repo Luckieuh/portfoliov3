@@ -4,7 +4,7 @@ import prisma from '../../../../lib/prisma';
 // GET - Récupérer toutes les réalisations
 export async function GET() {
   try {
-    const realisations = await prisma.realisation.findMany({
+    const realisations = await prisma.realisations.findMany({
       orderBy: { createdAt: 'desc' },
     });
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const realisation = await prisma.realisation.create({
+    const realisation = await prisma.realisations.create({
       data: {
         title,
         description,

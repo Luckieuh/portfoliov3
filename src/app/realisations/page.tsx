@@ -29,7 +29,7 @@ export default async function Realisation() {
 
     try {
         // Récupérer les projets depuis la base de données
-        const projectsData = await prisma.realisation.findMany({
+        const projectsData = await prisma.realisations.findMany({
             orderBy: { createdAt: 'desc' },
             include: {
                 images: {

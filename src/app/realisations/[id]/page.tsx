@@ -11,7 +11,7 @@ type Props = {
 export default async function RealisationDetail({ params }: Props) {
   const { id } = await params;
   
-  const project = await prisma.realisation.findUnique({
+  const project = await prisma.realisations.findUnique({
     where: { id: parseInt(id) },
     include: {
       images: {
