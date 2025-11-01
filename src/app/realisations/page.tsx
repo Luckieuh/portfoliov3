@@ -8,40 +8,62 @@ import prisma from '../../../lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Realisation() {
-    // Récupérer les projets depuis la base de données
-    const projectsData = await prisma.realisation.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-            images: {
-                orderBy: { createdAt: 'asc' },
-            },
-            categories: true,
-            tags: true,
-        },
-    });
+interface Project {
+    id: number;
+    title: string;
+    description: string;
+    imageUrl: string | null;
+    videoUrl: string | null;
+    link: string | null;
+    categories: string[];
+    tags: any[];
+    images: any[];
+    location: string | null;
+    youtubeUrl: string | null;
+    createdAt: string;
+}
 
-    // Convertir les données au format attendu par le composant
-    const projects = projectsData.map(project => ({
-        id: project.id,
-        title: project.title,
-        description: project.description,
-        imageUrl: project.images && project.images.length > 0 ? project.images[0].url : null,
-        videoUrl: project.videoUrl,
-        link: project.link,
-        categories: project.categories.map(cat => cat.name),
-        tags: project.tags,
-        images: project.images,
-        location: project.location,
-        youtubeUrl: project.youtubeUrl,
-        createdAt: project.createdAt.toISOString(),
-    }));
+export default async function Realisation() {
+    let projects: Project[] = [];
+    let error: string | null = null;
+
+    try {
+        // Récupérer les projets depuis la base de données
+        const projectsData = await prisma.realisation.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                images: {
+                    orderBy: { createdAt: 'asc' },
+                },
+                categories: true,
+                tags: true,
+            },
+        });
+
+        // Convertir les données au format attendu par le composant
+        projects = projectsData.map(project => ({
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            imageUrl: project.images && project.images.length > 0 ? project.images[0].url : null,
+            videoUrl: project.videoUrl,
+            link: project.link,
+            categories: project.categories.map(cat => cat.name),
+            tags: project.tags,
+            images: project.images,
+            location: project.location,
+            youtubeUrl: project.youtubeUrl,
+            createdAt: project.createdAt.toISOString(),
+        }));
+    } catch (err) {
+        console.error('Erreur lors de la récupération des réalisations:', err);
+        error = err instanceof Error ? err.message : 'Erreur inconnue';
+    }
     
     return (
         <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100 overflow-x-hidden relative">
             {/* SVG en arrière-plan */}
 
-            <h1>TEST</h1>
             <div className='absolute w-full h-full'>
                 <RealSVG />
             </div>
@@ -49,6 +71,13 @@ export default async function Realisation() {
             {/* Contenu principal au-dessus */}
             <div className='w-full relative z-10'>
                 <Header />
+                
+                {error && (
+                    <div className='mx-4 mt-4 p-4 bg-red-900 text-red-100 rounded-lg'>
+                        <p className='font-bold'>Erreur Base de Données:</p>
+                        <p className='text-sm'>{error}</p>
+                    </div>
+                )}
                 
                 <div className='w-full h-[10vh]'></div>
 
