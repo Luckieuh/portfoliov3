@@ -6,6 +6,9 @@ import BtnShadow from '../components/BtnShadow';
 import RealisationsClient from './RealisationsClient';
 import prisma from '../../../lib/prisma';
 
+// Empêcher le prerendering statique (la page dépend de la BD)
+export const dynamic = 'force-dynamic';
+
 export default async function Realisation() {
     // Récupérer les projets depuis la base de données
     const projectsData = await prisma.realisations.findMany({

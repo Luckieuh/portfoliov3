@@ -7,6 +7,9 @@ import CarouselWrapper from '@/app/components/CarouselWrapper';
 import RealisationInfoClient from '@/app/components/RealisationInfoClient';
 import Link from 'next/link';
 
+// Empêcher le prerendering statique (la page dépend de la BD)
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{ id: string }>;
 };
