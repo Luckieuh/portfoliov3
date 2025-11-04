@@ -25,8 +25,10 @@ export async function POST(request: NextRequest) {
     // Vérifier les variables d'environnement
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASSWORD) {
       console.error('Variables d\'environnement Gmail manquantes');
+      console.error('GMAIL_USER:', process.env.GMAIL_USER ? '✓' : '✗');
+      console.error('GMAIL_PASSWORD:', process.env.GMAIL_PASSWORD ? '✓' : '✗');
       return NextResponse.json(
-        { error: 'Configuration email incomplète' },
+        { error: 'Configuration email incomplète - Variables d\'environnement manquantes (GMAIL_USER ou GMAIL_PASSWORD)' },
         { status: 500 }
       );
     }

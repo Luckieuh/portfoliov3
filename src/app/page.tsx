@@ -103,20 +103,20 @@ export default async function Home() {
                                     <h1 className='text-4xl text-black dark:text-white font-medium'>Lucas</h1>
                                     <h1 className='text-6xl text-black dark:text-white font-bold mb-3'>Thomassin</h1>
                                     <div className='space-x-3 space-y-2'>
-                                        <button className='bg-orange-400/40 text-black dark:text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
+                                        <button className='bg-orange-400/40 text-white dark:text-white outline-orange-400 px-4.5 py-1 mb-2 rounded-2xl border-1 border-orange-400'>
                                             <img src='/localisation.svg' className='h-5 mb-1 inline-block mr-2'/>
                                             Angoulême
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 bg-orange-700/80 border-orange-400 text-orange-300'>
                                             Cadrage
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 bg-orange-700/80 border-orange-400 text-orange-300'>
                                             Montage
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 bg-orange-700/80 border-orange-400 text-orange-300'>
                                             Photographie
                                         </button>
-                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 border-orange-400 text-orange-300'>
+                                        <button className='outline-orange-400 px-4.5 py-1 rounded-2xl border-1 bg-orange-700/80 border-orange-400 text-orange-300'>
                                             Retouche photo
                                         </button>
                                     </div>

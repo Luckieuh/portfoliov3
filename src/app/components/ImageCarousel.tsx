@@ -71,7 +71,7 @@ export default function ImageCarousel({ images, title, onFullscreenOpen }: Image
                 e.stopPropagation();
                 goToPrevious();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label="Image précédente"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@ export default function ImageCarousel({ images, title, onFullscreenOpen }: Image
                 e.stopPropagation();
                 goToNext();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label="Image suivante"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,9 +92,24 @@ export default function ImageCarousel({ images, title, onFullscreenOpen }: Image
               </svg>
             </button>
 
-            {/* Compteur */}
-            <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
-              {currentIndex + 1} / {images.length}
+            {/* Indicateurs de points */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none">
+              {/* Points du carousel */}
+              {images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentIndex(idx);
+                  }}
+                  className={`rounded-full transition-all cursor-pointer pointer-events-auto ${
+                    idx === currentIndex
+                      ? 'bg-orange-500 w-2.5 h-2.5'
+                      : 'bg-white/40 hover:bg-white/70 w-2 h-2'
+                  }`}
+                  aria-label={`Aller à l'image ${idx + 1}`}
+                />
+              ))}
             </div>
           </>
         )}
@@ -102,7 +117,7 @@ export default function ImageCarousel({ images, title, onFullscreenOpen }: Image
 
       {/* Miniatures */}
       {images.length > 1 && (
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
           {images.map((img, idx) => (
             <button
               key={img.id}

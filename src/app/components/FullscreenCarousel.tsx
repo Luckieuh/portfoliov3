@@ -56,38 +56,62 @@ export default function FullscreenCarousel({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, goToPrevious, goToNext]);
 
+  // Désactiver le scroll quand le carousel est ouvert
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Désactiver le scroll
+    document.body.style.overflow = 'hidden';
+
+    // Cacher le header
+    const header = document.querySelector('header');
+    const originalDisplay = header?.style.display;
+    if (header) {
+      header.style.display = 'none';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      if (header) {
+        header.style.display = originalDisplay || '';
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || images.length === 0) return null;
 
   const currentImage = images[currentIndex];
 
   return (
-    <div className="fixed inset-0 bg-black/95 z-50 flex flex-col">
-      {/* Header avec fermer */}
-      <div className="flex items-center justify-between p-4 bg-black/50 border-b border-white/10">
-        <h2 className="text-white font-semibold text-lg">{title}</h2>
-        <button
-          onClick={onClose}
-          className="text-white hover:text-gray-300 transition-colors p-2"
-          aria-label="Fermer"
-        >
-          <X size={28} />
-        </button>
-      </div>
-
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex flex-col">
       {/* Zone d'affichage image principale */}
-      <div className="flex-1 flex items-center justify-center relative group overflow-hidden p-8 bg-black">
+      <div className="flex-1 flex items-center justify-center relative group overflow-hidden p-8 bg-black/20">
         <img
           src={currentImage.url}
           alt={`${title} - Image ${currentIndex + 1}`}
-          className="max-w-full max-h-full object-contain"
+          className="max-w-full h-[80vh] object-contain"
         />
+
+        {/* Bouton fermer (au-dessus du contenu) */}
+        <button
+          onClick={onClose}
+          className="absolute top-8 right-8 text-white hover:text-gray-300 transition-colors p-2 cursor-pointer z-50"
+          aria-label="Fermer"
+        >
+          <X size={32} />
+        </button>
+
+        {/* Info clavier */}
+        <div className="absolute top-8 left-8 px-4 py-2 text-white/60 text-xs z-40">
+          Utilisez les flèches pour naviguer • Échap pour fermer
+        </div>
 
         {/* Navigation gauche */}
         {images.length > 1 && (
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+              className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer"
               aria-label="Image précédente"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +122,7 @@ export default function FullscreenCarousel({
             {/* Navigation droite */}
             <button
               onClick={goToNext}
-              className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer"
               aria-label="Image suivante"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,40 +133,9 @@ export default function FullscreenCarousel({
         )}
 
         {/* Compteur */}
-        <div className="absolute bottom-4 left-4 bg-black/70 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/20 text-white px-4 py-2 rounded-lg text-sm font-medium z-10">
           {currentIndex + 1} / {images.length}
         </div>
-      </div>
-
-      {/* Miniatures en bas */}
-      {images.length > 1 && (
-        <div className="bg-black/70 border-t border-white/10 p-4 overflow-x-auto">
-          <div className="flex gap-3 pb-2 mx-auto justify-center">
-            {images.map((image, index) => (
-              <button
-                key={image.id}
-                onClick={() => setCurrentIndex(index)}
-                className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden transition-all ${
-                  index === currentIndex
-                    ? 'ring-2 ring-orange-400 scale-110'
-                    : 'opacity-60 hover:opacity-100'
-                }`}
-                aria-label={`Aller à l'image ${index + 1}`}
-              >
-                <img
-                  src={image.url}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Info clavier */}
-      <div className="px-4 py-2 bg-black/50 border-t border-white/10 text-center text-white/60 text-xs">
-        Utilisez les flèches pour naviguer • Échap pour fermer
       </div>
     </div>
   );
