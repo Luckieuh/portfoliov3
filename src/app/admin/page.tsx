@@ -6,12 +6,17 @@ import { useRouter } from 'next/navigation';
 export default function AdminPage() {
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      // Clear any auth tokens if stored in localStorage
-      localStorage.removeItem('adminToken');
-      // Redirect to home
-      router.push('/');
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+        });
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+      } finally {
+        router.push('/');
+      }
     }
   };
 
