@@ -10,4 +10,3 @@ CREATE TABLE "Realisations" (
 
     CONSTRAINT "Realisations_pkey" PRIMARY KEY ("id")
 );
-

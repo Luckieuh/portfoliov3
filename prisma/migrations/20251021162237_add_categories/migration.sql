@@ -1,2 +1,0 @@
--- This migration was manually resolved and marked as applied
--- The database changes were already applied but the migration record was missing locally

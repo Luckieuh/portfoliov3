@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import prisma from '../../../../lib/prisma';
 
 // GET - Récupérer tous les tags
 export async function GET() {
@@ -31,28 +31,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const trimmedName = name.trim();
-
-    // Vérifier si le tag existe déjà (case-insensitive)
-    const existingTag = await prisma.tag.findFirst({
-      where: {
-        name: {
-          equals: trimmedName,
-          mode: 'insensitive',
-        },
-      },
+    // Vérifier si le tag existe déjà
+    const existingTag = await prisma.tag.findUnique({
+      where: { name: name.toLowerCase() },
     });
 
     if (existingTag) {
-      return NextResponse.json(
-        { error: 'Ce tag existe déjà' },
-        { status: 409 }
-      );
+      return NextResponse.json(existingTag);
     }
 
     const tag = await prisma.tag.create({
       data: {
-        name: trimmedName,
+        name: name.toLowerCase(),
       },
     });
 

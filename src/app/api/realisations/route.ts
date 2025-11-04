@@ -4,8 +4,15 @@ import prisma from '../../../../lib/prisma';
 // GET - Récupérer toutes les réalisations
 export async function GET() {
   try {
-    const realisations = await prisma.realisation.findMany({
+    const realisations = await prisma.realisations.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        images: {
+          orderBy: { position: 'asc' },
+        },
+        categories: true,
+        tags: true,
+      },
     });
 
     return NextResponse.json(realisations);
@@ -22,7 +29,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, location, videoUrl, youtubeUrl, link, categories = [], tags = [] } = body;
+    const { title, description, location, videoUrl, youtubeUrl, link, categoryNames = [], tagNames = [], newImages = [] } = body;
 
     if (!title || !description) {
       return NextResponse.json(
@@ -31,7 +38,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const realisation = await prisma.realisation.create({
+    // Vérifier qu'il y a au moins du contenu: images, vidéo YouTube ou vidéo uploadée
+    const hasVideo = (videoUrl && videoUrl.trim()) || (youtubeUrl && youtubeUrl.trim());
+    const hasImages = Array.isArray(newImages) && newImages.length > 0;
+    const hasContent = hasVideo || hasImages;
+    
+    if (!hasContent) {
+      return NextResponse.json(
+        { error: 'Au moins une vidéo YouTube, une vidéo uploadée ou une image est requise' },
+        { status: 400 }
+      );
+    }
+
+    const realisation = await prisma.realisations.create({
       data: {
         title,
         description,
@@ -39,13 +58,41 @@ export async function POST(request: NextRequest) {
         videoUrl: videoUrl || null,
         youtubeUrl: youtubeUrl || null,
         link: link || null,
-        categories: categories.length > 0 ? { connect: categories.map((id: number) => ({ id })) } : undefined,
-        tags: tags.length > 0 ? { connect: tags.map((id: number) => ({ id })) } : undefined,
+        images: {
+          create: Array.isArray(newImages) && newImages.length > 0
+            ? newImages.map((img: { url: string; position: number }) => ({
+                url: img.url,
+                position: img.position,
+              }))
+            : [],
+        },
+        categories: {
+          connect: Array.isArray(categoryNames) && categoryNames.length > 0
+            ? await Promise.all(
+                categoryNames.map(async (name: string) => {
+                  const category = await prisma.category.findUnique({ where: { name } });
+                  return { id: category?.id || 0 };
+                })
+              ).then(cats => cats.filter(c => c.id !== 0))
+            : [],
+        },
+        tags: {
+          connect: Array.isArray(tagNames) && tagNames.length > 0
+            ? await Promise.all(
+                tagNames.map(async (name: string) => {
+                  const tag = await prisma.tag.findUnique({ where: { name } });
+                  return { id: tag?.id || 0 };
+                })
+              ).then(tags => tags.filter(t => t.id !== 0))
+            : [],
+        },
       },
       include: {
+        images: {
+          orderBy: { position: 'asc' },
+        },
         categories: true,
         tags: true,
-        images: true,
       },
     });
 

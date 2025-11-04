@@ -1,225 +1,140 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, Edit, LogOut, Plus } from 'lucide-react';
-
-interface Realisation {
-  id: number;
-  title: string;
-  description: string;
-  location?: string;
-  images?: { url: string }[];
-  videoUrl?: string;
-  youtubeUrl?: string;
-  link?: string;
-  categories: Array<{ id: number; name: string }>;
-  tags: Array<{ id: number; name: string }>;
-  createdAt: string;
-}
 
 export default function AdminPage() {
   const router = useRouter();
-  const [realisations, setRealisations] = useState<Realisation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    // Vérifier l'authentification en appelant un endpoint protégé
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/verify', {
-          method: 'GET',
-          credentials: 'include', // Important: inclure les cookies
-        });
-
-        if (response.status === 401 || !response.ok) {
-          // Pas authentifié, rediriger vers login
-          router.push('/auth/login');
-          return;
-        }
-
-        // Authentifié, charger les réalisations
-        setIsAuthenticated(true);
-        loadRealisations();
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.push('/auth/login');
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  const loadRealisations = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/realisations');
-      if (!response.ok) throw new Error('Erreur lors du chargement');
-      const data = await response.json();
-      setRealisations(data);
-    } catch (error) {
-      console.error('Erreur:', error);
-      setMessage({ type: 'error', text: 'Erreur lors du chargement des réalisations' });
-    } finally {
-      setIsLoading(false);
+  const handleLogout = () => {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      // Clear any auth tokens if stored in localStorage
+      localStorage.removeItem('adminToken');
+      // Redirect to home
+      router.push('/');
     }
   };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/auth/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) return;
-
-    try {
-      const response = await fetch(`/api/realisations/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Erreur lors de la suppression');
-
-      setMessage({ type: 'success', text: 'Projet supprimé avec succès!' });
-      loadRealisations();
-    } catch (error) {
-      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la suppression' });
-    }
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-neutral-600 dark:text-neutral-400">Vérification de l'authentification...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-12">
           <h1 className="text-4xl font-bold text-neutral-800 dark:text-white">
             Administration
           </h1>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            className="hover:cursor-pointer px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
           >
-            <LogOut size={18} />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
             Déconnexion
           </button>
         </div>
 
-        {/* Boutons de gestion */}
-        <div className="mb-6 flex gap-4">
-          <button
-            onClick={() => router.push('/admin/categories')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-          >
-            ⚙️ Gérer les catégories
-          </button>
-          <button
-            onClick={() => router.push('/admin/site-images')}
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-          >
-            🖼️ Gérer les images
-          </button>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Carte: Créer un projet */}
+          <Link href="/admin/create" className="group">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center text-center group-hover:scale-105 transition-transform">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-orange-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
+                Créer un projet
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Ajouter une nouvelle réalisation
+              </p>
+            </div>
+          </Link>
 
-        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-neutral-800 dark:text-white">
-              Réalisations ({realisations.length})
-            </h2>
-            <button
-              onClick={() => router.push('/admin/edit/new')}
-              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-            >
-              <Plus size={18} />
-              Nouveau Projet
-            </button>
-          </div>
+          {/* Carte: Éditer les projets */}
+          <Link href="/admin/edit" className="group">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center text-center group-hover:scale-105 transition-transform">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
+                Éditer les projets
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Modifier ou supprimer des réalisations
+              </p>
+            </div>
+          </Link>
 
-          {message && (
-            <div
-              className={`mb-6 p-4 rounded ${
-                message.type === 'success'
-                  ? 'bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-100'
-                  : 'bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-100'
-              }`}
-            >
-              {message.text}
+          {/* Carte: Gérer les catégories */}
+          <Link href="/admin/categories" className="group">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center text-center group-hover:scale-105 transition-transform">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21H4a2 2 0 01-2-2V9.414a1 1 0 010-1.414l7-7a1 1 0 011.414 0l7 7a1 1 0 010 1.414V19a2 2 0 01-2 2h-3" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
+                Gérer les catégories
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Ajouter, modifier ou supprimer des catégories
+              </p>
             </div>
-          )}
+          </Link>
 
-          {isLoading ? (
-            <div className="text-center py-8 text-neutral-600 dark:text-neutral-400">
-              Chargement des réalisations...
+          {/* Carte: Gérer les images */}
+          <Link href="/admin/site-images" className="group">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center text-center group-hover:scale-105 transition-transform">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-purple-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
+                Gérer les images
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Organiser et modifier les images
+              </p>
             </div>
-          ) : realisations.length === 0 ? (
-            <div className="text-center py-8 text-neutral-600 dark:text-neutral-400">
-              Aucune réalisation. Commencez par en créer une !
+          </Link>
+
+          {/* Carte: Gérer les tags */}
+          <Link href="/admin/tags" className="group">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center text-center group-hover:scale-105 transition-transform">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
+                Gérer les tags
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Ajouter, modifier ou supprimer des tags/mots-clés
+              </p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {realisations.map((realisation) => (
-                <div
-                  key={realisation.id}
-                  className="border border-neutral-300 dark:border-neutral-700 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition flex justify-between items-start"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-neutral-800 dark:text-white text-lg">
-                      {realisation.title}
-                    </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2">
-                      {realisation.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {realisation.categories && Array.isArray(realisation.categories) && realisation.categories.map((cat) => (
-                        <span
-                          key={cat.id}
-                          className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-100 px-2 py-1 rounded"
-                        >
-                          {cat.name}
-                        </span>
-                      ))}
-                    </div>
-                    {realisation.images && realisation.images.length > 0 && (
-                      <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-2">
-                        📷 {realisation.images.length} image(s)
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-2 ml-4 flex-shrink-0">
-                    <button
-                      onClick={() => router.push(`/admin/edit/${realisation.id}`)}
-                      className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded transition"
-                      title="Éditer"
-                    >
-                      <Edit size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(realisation.id)}
-                      className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 rounded transition"
-                      title="Supprimer"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+          </Link>
+
+          {/* Carte: Retour */}
+          <Link href="/" className="group">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center text-center group-hover:scale-105 transition-transform">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-gray-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-2">
+                Retour à l'accueil
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Revenir au site public
+              </p>
             </div>
-          )}
+          </Link>
         </div>
       </div>
     </div>

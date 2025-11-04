@@ -1,25 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import prisma from '../../../../../lib/prisma';
 
-// DELETE - Supprimer un tag par ID
+// DELETE - Supprimer un tag
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    const parsedId = parseInt(id);
-
-    if (isNaN(parsedId)) {
+    const id = parseInt(params.id);
+    
+    if (isNaN(id)) {
       return NextResponse.json(
-        { error: "L'ID du tag est invalide" },
+        { error: 'ID invalide' },
         { status: 400 }
       );
     }
 
-    // Vérifier si le tag existe
     const tag = await prisma.tag.findUnique({
-      where: { id: parsedId },
+      where: { id },
     });
 
     if (!tag) {
@@ -29,15 +27,14 @@ export async function DELETE(
       );
     }
 
-    // Supprimer le tag (les relations seront cascadées selon le schéma)
     await prisma.tag.delete({
-      where: { id: parsedId },
+      where: { id },
     });
 
-    return NextResponse.json(
-      { success: true, message: 'Tag supprimé avec succès' },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: 'Tag supprimé avec succès',
+    });
   } catch (error) {
     console.error('Erreur lors de la suppression du tag:', error);
     return NextResponse.json(

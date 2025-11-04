@@ -1,54 +1,23 @@
-/**
- * Extrait l'ID YouTube d'une URL YouTube
- * Supporte les formats:
- * - https://www.youtube.com/watch?v=VIDEOID
- * - https://youtu.be/VIDEOID
- * - https://www.youtube.com/embed/VIDEOID
- */
-export function extractYoutubeId(url: string): string | null {
-  if (!url) return null;
-
+export function getYoutubeThumbnail(youtubeUrl: string): string {
   try {
-    // Format: https://www.youtube.com/watch?v=VIDEOID
-    const match1 = url.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (match1 && match1[1]) {
-      return match1[1];
+    // Extraire l'ID de la vidéo YouTube à partir de l'URL
+    let videoId = '';
+    
+    if (youtubeUrl.includes('youtube.com/watch')) {
+      const url = new URL(youtubeUrl);
+      videoId = url.searchParams.get('v') || '';
+    } else if (youtubeUrl.includes('youtu.be')) {
+      videoId = youtubeUrl.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (youtubeUrl.includes('youtube.com/embed')) {
+      videoId = youtubeUrl.split('/embed/')[1]?.split('?')[0] || '';
     }
-
-    // Format: https://youtu.be/VIDEOID
-    const match2 = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-    if (match2 && match2[1]) {
-      return match2[1];
-    }
-
-    // Si c'est déjà un ID valide
-    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
-      return url;
-    }
-
-    return null;
-  } catch {
-    return null;
+    
+    if (!videoId) return '';
+    
+    // Retourner l'URL de la miniature YouTube
+    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  } catch (error) {
+    console.error('Erreur lors de l\'extraction de l\'ID YouTube:', error);
+    return '';
   }
-}
-
-/**
- * Génère une URL d'embed YouTube
- */
-export function getYoutubeEmbedUrl(url: string): string | null {
-  const videoId = extractYoutubeId(url);
-  if (!videoId) return null;
-  return `https://www.youtube.com/embed/${videoId}?rel=0`;
-}
-
-/**
- * Génère l'URL de la miniature YouTube
- * Retourne la miniature en haute qualité (maxresdefault)
- * Si elle n'existe pas, retourne la qualité standard (hqdefault)
- */
-export function getYoutubeThumbnail(url: string): string | null {
-  const videoId = extractYoutubeId(url);
-  if (!videoId) return null;
-  // maxresdefault est la meilleure qualité disponible
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }

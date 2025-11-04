@@ -117,7 +117,7 @@ export default function RecentRealisations({ realisations }: RecentRealisationsP
                               {realisation.tags.map((tag) => (
                                   <span 
                                       key={tag.id}
-                                      className="px-2.5 py-1 text-xs font-medium group-hover:bg-orange-500 dark:group-hover:bg-orange-300 border-1 border-neutral-600 dark:group-hover:border-orange-700 group-hover:border-orange-600 transition-colors dark:border-white text-neutral-600 dark:group-hover:text-neutral-800 group-hover:text-neutral-200 dark:text-white rounded-full"
+                                      className="px-2.5 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-600 group-hover:bg-orange-500 dark:group-hover:bg-orange-300 border-1 border-neutral-600 dark:group-hover:border-orange-700 group-hover:border-orange-600 transition-colors dark:border-white text-neutral-600 dark:group-hover:text-neutral-800 group-hover:text-neutral-200 dark:text-white rounded-full"
                                   >
                                       {tag.name}
                                   </span>

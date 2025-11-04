@@ -4,11 +4,10 @@ import prisma from '../../../../../lib/prisma';
 // GET - Récupérer une réalisation spécifique
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: idString } = await params;
-    const id = parseInt(idString);
+    const id = parseInt(params.id);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -17,8 +16,15 @@ export async function GET(
       );
     }
 
-    const realisation = await prisma.realisation.findUnique({
+    const realisation = await prisma.realisations.findUnique({
       where: { id },
+      include: {
+        categories: true,
+        tags: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
+      },
     });
 
     if (!realisation) {
@@ -41,11 +47,10 @@ export async function GET(
 // PUT - Mettre à jour une réalisation
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: idString } = await params;
-    const id = parseInt(idString);
+    const id = parseInt(params.id);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -55,9 +60,36 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, location, videoUrl, youtubeUrl, link, categories, tags } = body;
+    const { title, description, location, videoUrl, youtubeUrl, link, createdAt, categoryNames = [], tagNames = [], newImages = [] } = body;
 
-    const realisation = await prisma.realisation.update({
+    if (!title || !description) {
+      return NextResponse.json(
+        { error: 'Titre et description requis' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier qu'il y a au moins du contenu: images, vidéo YouTube ou vidéo uploadée
+    const hasVideo = (videoUrl && videoUrl.trim()) || (youtubeUrl && youtubeUrl.trim());
+    const existingImages = (await prisma.realisationImage.count({ where: { realisationId: id } })) > 0;
+    const hasNewImages = Array.isArray(newImages) && newImages.length > 0;
+    const hasContent = hasVideo || existingImages || hasNewImages;
+    
+    if (!hasContent) {
+      return NextResponse.json(
+        { error: 'Au moins une vidéo YouTube, une vidéo uploadée ou une image est requise' },
+        { status: 400 }
+      );
+    }
+
+    // Obtenir la position maximale actuelle des images
+    const maxPosition = await prisma.realisationImage.aggregate({
+      where: { realisationId: id },
+      _max: { position: true },
+    });
+    const nextPosition = (maxPosition._max.position || -1) + 1;
+
+    const realisation = await prisma.realisations.update({
       where: { id },
       data: {
         title,
@@ -66,8 +98,42 @@ export async function PUT(
         videoUrl: videoUrl || null,
         youtubeUrl: youtubeUrl || null,
         link: link || null,
-        categories: categories ? { set: categories.map((catId: number) => ({ id: catId })) } : undefined,
-        tags: tags ? { set: tags.map((tagId: number) => ({ id: tagId })) } : undefined,
+        createdAt: createdAt ? new Date(createdAt) : undefined,
+        images: {
+          create: hasNewImages
+            ? newImages.map((img: { url: string; position: number }, index: number) => ({
+                url: img.url,
+                position: nextPosition + index,
+              }))
+            : [],
+        },
+        categories: {
+          set: Array.isArray(categoryNames) && categoryNames.length > 0
+            ? await Promise.all(
+                categoryNames.map(async (name: string) => {
+                  const category = await prisma.category.findUnique({ where: { name } });
+                  return { id: category?.id || 0 };
+                })
+              ).then(cats => cats.filter(c => c.id !== 0))
+            : [],
+        },
+        tags: {
+          set: Array.isArray(tagNames) && tagNames.length > 0
+            ? await Promise.all(
+                tagNames.map(async (name: string) => {
+                  const tag = await prisma.tag.findUnique({ where: { name } });
+                  return { id: tag?.id || 0 };
+                })
+              ).then(tags => tags.filter(t => t.id !== 0))
+            : [],
+        },
+      },
+      include: {
+        categories: true,
+        tags: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
       },
     });
 
@@ -84,11 +150,10 @@ export async function PUT(
 // DELETE - Supprimer une réalisation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: idString } = await params;
-    const id = parseInt(idString);
+    const id = parseInt(params.id);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -97,7 +162,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.realisation.delete({
+    await prisma.realisations.delete({
       where: { id },
     });
 

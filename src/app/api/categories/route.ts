@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import prisma from '../../../../lib/prisma';
 
 // GET - Récupérer toutes les catégories
 export async function GET() {
@@ -33,19 +33,16 @@ export async function POST(request: NextRequest) {
 
     // Vérifier si la catégorie existe déjà
     const existingCategory = await prisma.category.findUnique({
-      where: { name: name.trim().toLowerCase() },
+      where: { name: name.toLowerCase() },
     });
 
     if (existingCategory) {
-      return NextResponse.json(
-        { error: 'Cette catégorie existe déjà' },
-        { status: 409 }
-      );
+      return NextResponse.json(existingCategory);
     }
 
     const category = await prisma.category.create({
       data: {
-        name: name.trim().toLowerCase(),
+        name: name.toLowerCase(),
       },
     });
 

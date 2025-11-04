@@ -3,82 +3,62 @@
 import { useState } from 'react';
 
 interface ImageUploadProps {
-  onUploadSuccess: (url: string | string[]) => void;
+  onUploadSuccess: (url: string) => void;
   accept?: string;
   maxSize?: number; // en MB
-  multiple?: boolean;
 }
 
 export default function ImageUpload({ 
   onUploadSuccess, 
   accept = 'image/*,video/*',
-  maxSize = 10,
-  multiple = false
+  maxSize = 10 
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    // Vérifier la taille des fichiers
-    const oversized = files.filter(file => file.size > maxSize * 1024 * 1024);
-    if (oversized.length > 0) {
-      setError(`${oversized.length} fichier(s) dépasse(nt) ${maxSize}MB`);
+    // Vérifier la taille du fichier
+    if (file.size > maxSize * 1024 * 1024) {
+      setError(`Le fichier doit faire moins de ${maxSize}MB`);
       return;
     }
 
     setError(null);
     setIsUploading(true);
 
-    // Créer des previews
-    const newPreviews: string[] = [];
-    for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          newPreviews.push(reader.result as string);
-          if (newPreviews.length === files.filter(f => f.type.startsWith('image/')).length) {
-            setPreviews(newPreviews);
-          }
-        };
-        reader.readAsDataURL(file);
-      }
+    // Créer une preview
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
 
     try {
-      const uploadedUrls: string[] = [];
-      
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
+      const formData = new FormData();
+      formData.append('file', file);
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Erreur lors de l\'upload');
-        }
-
-        const data = await response.json();
-        uploadedUrls.push(data.url);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de l\'upload');
       }
-      
-      // Si multiple, retourner un tableau, sinon retourner la première URL
-      if (multiple && uploadedUrls.length > 1) {
-        onUploadSuccess(uploadedUrls);
-      } else {
-        uploadedUrls.forEach(url => onUploadSuccess(url));
-      }
+
+      const data = await response.json();
+      onUploadSuccess(data.url);
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'upload');
-      setPreviews([]);
+      setPreview(null);
     } finally {
       setIsUploading(false);
     }
@@ -92,22 +72,12 @@ export default function ImageUpload({
           className="flex flex-col items-center justify-center w-full h-64 border-2 border-neutral-300 border-dashed rounded-lg cursor-pointer bg-neutral-50 dark:hover:bg-neutral-800 dark:bg-neutral-700 hover:bg-neutral-100 dark:border-neutral-600 dark:hover:border-neutral-500"
         >
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            {previews.length > 0 ? (
-              <div className="w-full h-48 overflow-auto">
-                <div className="flex gap-2">
-                  {previews.map((preview, idx) => (
-                    <img 
-                      key={idx}
-                      src={preview} 
-                      alt={`Preview ${idx + 1}`}
-                      className="h-48 object-cover rounded flex-shrink-0"
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-                  {previews.length} image(s) sélectionnée(s)
-                </p>
-              </div>
+            {preview ? (
+              <img 
+                src={preview} 
+                alt="Preview" 
+                className="w-full h-48 object-contain mb-4"
+              />
             ) : (
               <>
                 <svg 
@@ -129,7 +99,7 @@ export default function ImageUpload({
                   <span className="font-semibold">Cliquez pour télécharger</span> ou glissez-déposez
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {multiple ? 'Plusieurs fichiers' : 'Images ou vidéos'} (MAX. {maxSize}MB)
+                  Images ou vidéos (MAX. {maxSize}MB)
                 </p>
               </>
             )}
@@ -141,7 +111,6 @@ export default function ImageUpload({
             accept={accept}
             onChange={handleFileChange}
             disabled={isUploading}
-            multiple={multiple}
           />
         </label>
       </div>

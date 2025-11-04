@@ -1,156 +1,100 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 type Image = {
   id: number;
   url: string;
+  position: number;
 };
 
-type ImageCarouselProps = {
+interface ImageCarouselProps {
   images: Image[];
   title: string;
-};
+  onFullscreenOpen?: (index: number) => void;
+}
 
-export default function ImageCarousel({ images, title }: ImageCarouselProps) {
+export default function ImageCarousel({ images, title, onFullscreenOpen }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="w-full aspect-video bg-neutral-200 dark:bg-neutral-700 rounded-lg flex items-center justify-center">
+        <p className="text-neutral-500 dark:text-neutral-400">Aucune image disponible</p>
+      </div>
+    );
+  }
+
+  const currentImage = images[currentIndex];
 
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
-    );
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
+  const handleImageClick = () => {
+    onFullscreenOpen?.(currentIndex);
   };
-
-  const openLightbox = (index: number) => {
-    setLightboxIndex(index);
-    setIsLightboxOpen(true);
-  };
-
-  const closeLightbox = () => {
-    setIsLightboxOpen(false);
-  };
-
-  const goToPreviousLightbox = () => {
-    setLightboxIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
-    );
-  };
-
-  const goToNextLightbox = () => {
-    setLightboxIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  // Gérer les touches clavier
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isLightboxOpen) return;
-      
-      if (e.key === 'ArrowLeft') goToPreviousLightbox();
-      if (e.key === 'ArrowRight') goToNextLightbox();
-      if (e.key === 'Escape') closeLightbox();
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen]);
-
-  if (images.length === 0) {
-    return null;
-  }
 
   return (
-    <div className="mb-8 w-full">
-      {/* Carousel principal */}
-      <div className="relative w-full rounded-lg overflow-hidden group">
-        {/* Images */}
-        <div 
-          className="relative w-full aspect-video bg-neutral-200 dark:bg-neutral-900 cursor-pointer"
-          onClick={() => openLightbox(currentIndex)}
-        >
-          {images.map((image, index) => (
-            <div
-              key={image.id}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                index === currentIndex ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <img
-                src={image.url}
-                alt={`${title} - Image ${index + 1}`}
-                className="w-full h-full object-contain bg-neutral-900"
-              />
-            </div>
-          ))}
+    <div className="w-full">
+      {/* Image principale */}
+      <div 
+        className="relative w-full aspect-video bg-neutral-900 rounded-lg overflow-hidden group cursor-pointer"
+        onClick={handleImageClick}
+      >
+        <img
+          src={currentImage.url}
+          alt={`${title} - ${currentIndex + 1}`}
+          className="w-full h-full object-cover group-hover:brightness-75 transition-brightness duration-300"
+        />
+
+        {/* Logo fullscreen en haut à droite */}
+        <div className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 rounded-full p-2 transition-all opacity-0 group-hover:opacity-100">
+          <svg className="w-5 h-5 text-white" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6C18 6.55229 17.5523 7 17 7C16.4477 7 16 6.55229 16 6V2H12C11.4477 2 11 1.55229 11 1C11 0.44772 11.4477 0 12 0H17C17.5523 0 18 0.44772 18 1V6Z" fill="white"/>
+        <path d="M2 12C2 11.4477 1.55229 11 1 11C0.44772 11 0 11.4477 0 12V17C0 17.5523 0.44772 18 1 18H6C6.55229 18 7 17.5523 7 17C7 16.4477 6.55229 16 6 16H2V12Z" fill="white"/>
+        <path d="M16 12C16 11.4477 16.4477 11 17 11C17.5523 11 18 11.4477 18 12V17C18 17.5523 17.5523 18 17 18H12C11.4477 18 11 17.5523 11 17C11 16.4477 11.4477 16 12 16H16V12Z" fill="white"/>
+        <path d="M1 7C1.55229 7 2 6.55229 2 6V2H6C6.55229 2 7 1.55229 7 1C7 0.44772 6.55229 0 6 0H1C0.44772 0 0 0.44772 0 1V6C0 6.55229 0.44772 7 1 7Z" fill="white"/>
+        </svg>
+
         </div>
 
-        {/* Boutons de navigation */}
+        {/* Flèches de navigation */}
         {images.length > 1 && (
           <>
-            {/* Bouton précédent */}
             <button
-              onClick={goToPrevious}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrevious();
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label="Image précédente"
             >
-              <div className="bg-black/50 hover:bg-black/75 transition-colors p-3 m-2 rounded-full">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </div>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
 
-            {/* Bouton suivant */}
             <button
-              onClick={goToNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNext();
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label="Image suivante"
             >
-              <div className="bg-black/50 hover:bg-black/75 transition-colors p-3 m-2 rounded-full">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
 
-            {/* Indicateur de position */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black/50 px-4 py-2 rounded-full">
-              <span className="text-white text-sm font-medium">
-                {currentIndex + 1} / {images.length}
-              </span>
+            {/* Compteur */}
+            <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
+              {currentIndex + 1} / {images.length}
             </div>
           </>
         )}
@@ -158,133 +102,24 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
 
       {/* Miniatures */}
       {images.length > 1 && (
-        <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-          {images.map((image, index) => (
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          {images.map((img, idx) => (
             <button
-              key={image.id}
-              onClick={() => goToSlide(index)}
-              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all duration-300 ${
-                index === currentIndex
-                  ? 'border-2 border-orange-500 opacity-100'
-                  : 'opacity-60 hover:opacity-90'
+              key={img.id}
+              onClick={() => setCurrentIndex(idx)}
+              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                idx === currentIndex
+                  ? 'border-orange-500 scale-105'
+                  : 'border-neutral-300 dark:border-neutral-600 hover:border-orange-400'
               }`}
-              aria-label={`Aller à l'image ${index + 1}`}
             >
               <img
-                src={image.url}
-                alt={`Miniature ${index + 1}`}
+                src={img.url}
+                alt={`Thumbnail ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
             </button>
           ))}
-        </div>
-      )}
-
-      {/* Modal Lightbox */}
-      {isLightboxOpen && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
-          onClick={closeLightbox}
-        >
-          {/* Conteneur de l'image */}
-          <div 
-            className="relative w-full h-full flex items-center justify-center px-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Image plein écran */}
-            <img
-              src={images[lightboxIndex].url}
-              alt={`${title} - Image ${lightboxIndex + 1}`}
-              className="max-w-4xl max-h-[90vh] object-contain"
-            />
-
-            {/* Bouton fermer */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-              aria-label="Fermer"
-            >
-              <svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-
-            {/* Navigation précédent */}
-            {images.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToPreviousLightbox();
-                }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Image précédente"
-              >
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-            )}
-
-            {/* Navigation suivant */}
-            {images.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToNextLightbox();
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Image suivante"
-              >
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            )}
-
-            {/* Indicateur de position */}
-            {images.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-white/10 backdrop-blur px-4 py-2 rounded-full">
-                <span className="text-white text-sm font-medium">
-                  {lightboxIndex + 1} / {images.length}
-                </span>
-              </div>
-            )}
-
-            {/* Info clavier */}
-            <div className="absolute top-4 left-4 text-white/60 text-sm hidden md:block">
-              <p>← → pour naviguer • ESC pour fermer</p>
-            </div>
-          </div>
         </div>
       )}
     </div>
