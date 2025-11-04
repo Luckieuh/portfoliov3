@@ -153,7 +153,9 @@ export default function EditProjectPage() {
     }
   };
 
-  const handleDeleteImage = async (imageId: number) => {
+  const handleDeleteImage = async (imageId: number | undefined) => {
+    if (!imageId) return; // Si pas d'ID, on ne supprime rien
+    
     try {
       const response = await fetch(`/api/images/${imageId}`, {
         method: 'DELETE',
@@ -195,23 +197,28 @@ export default function EditProjectPage() {
     }
   };
 
-  const handleImagesReorder = async (reorderedImages: Array<{ id: number; url: string; position: number }>) => {
+  const handleImagesReorder = async (reorderedImages: Array<{ id?: number; url: string; position: number }>) => {
     if (!formData) return;
 
     try {
+      // Filtrer pour ne garder que les images avec un ID (pas les nouvelles)
+      const imagesToUpdate = reorderedImages.filter(img => img.id !== undefined && img.id !== 0);
+      
       // Mettre à jour les positions localement
       setFormData({
         ...formData,
-        images: reorderedImages,
+        images: reorderedImages as Array<{ id: number; url: string; position: number }>,
       });
 
-      // Mettre à jour les positions dans la base de données
-      for (const image of reorderedImages) {
-        await fetch(`/api/images/${image.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ position: image.position }),
-        });
+      // Mettre à jour les positions dans la base de données (seulement celles avec un ID valide)
+      for (const image of imagesToUpdate) {
+        if (image.id) {
+          await fetch(`/api/images/${image.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position: image.position }),
+          });
+        }
       }
 
       setMessage({ type: 'success', text: 'Ordre des images mis à jour!' });
