@@ -4,10 +4,11 @@ import prisma from '../../../../../lib/prisma';
 // GET - Récupérer une réalisation spécifique
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -47,10 +48,11 @@ export async function GET(
 // PUT - Mettre à jour une réalisation
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -89,6 +91,27 @@ export async function PUT(
     });
     const nextPosition = (maxPosition._max.position || -1) + 1;
 
+    // Traiter les catégories et tags séquentiellement
+    let categoryIds: number[] = [];
+    if (Array.isArray(categoryNames) && categoryNames.length > 0) {
+      const categoryPromises = categoryNames.map(async (name: string) => {
+        const category = await prisma.category.findUnique({ where: { name } });
+        return category?.id;
+      });
+      const ids = await Promise.all(categoryPromises);
+      categoryIds = ids.filter((id): id is number => id !== undefined);
+    }
+
+    let tagIds: number[] = [];
+    if (Array.isArray(tagNames) && tagNames.length > 0) {
+      const tagPromises = tagNames.map(async (name: string) => {
+        const tag = await prisma.tag.findUnique({ where: { name } });
+        return tag?.id;
+      });
+      const ids = await Promise.all(tagPromises);
+      tagIds = ids.filter((id): id is number => id !== undefined);
+    }
+
     const realisation = await prisma.realisations.update({
       where: { id },
       data: {
@@ -108,24 +131,10 @@ export async function PUT(
             : [],
         },
         categories: {
-          set: Array.isArray(categoryNames) && categoryNames.length > 0
-            ? await Promise.all(
-                categoryNames.map(async (name: string) => {
-                  const category = await prisma.category.findUnique({ where: { name } });
-                  return { id: category?.id || 0 };
-                })
-              ).then(cats => cats.filter(c => c.id !== 0))
-            : [],
+          set: categoryIds.map(id => ({ id })),
         },
         tags: {
-          set: Array.isArray(tagNames) && tagNames.length > 0
-            ? await Promise.all(
-                tagNames.map(async (name: string) => {
-                  const tag = await prisma.tag.findUnique({ where: { name } });
-                  return { id: tag?.id || 0 };
-                })
-              ).then(tags => tags.filter(t => t.id !== 0))
-            : [],
+          set: tagIds.map(id => ({ id })),
         },
       },
       include: {
@@ -140,8 +149,9 @@ export async function PUT(
     return NextResponse.json(realisation);
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour de la réalisation' },
+      { error: `Erreur lors de la mise à jour de la réalisation: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -150,10 +160,11 @@ export async function PUT(
 // DELETE - Supprimer une réalisation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     
     if (isNaN(id)) {
       return NextResponse.json(

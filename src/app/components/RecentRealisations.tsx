@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { getYoutubeThumbnail } from '@/lib/youtube';
 
 type Realisation = {
   id: number;
@@ -26,9 +27,30 @@ export default function RecentRealisations({ realisations }: RecentRealisationsP
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 w-[85%] max-w-6xl px-4">
         {realisations.map((realisation) => (
           <Link key={realisation.id} href={`/realisations/${realisation.id}`}>
-            <div className="group cursor-pointer overflow-hidden rounded-lg border-[2px] hover:scale-110 transition-all duration-400 ease-[cubic-bezier(.55,.12,.56,.9)] dark:bg-neutral-800 box-shadow-glow">
+            <div className="group cursor-pointer overflow-hidden rounded-lg border-[2px] hover:scale-110 transition-all duration-400 ease-[cubic-bezier(.55,.12,.56,.9)] dark:bg-neutral-800 shadow-lg">
               <div className="relative w-full aspect-video bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
-                {realisation.images.length > 0 ? (
+                {realisation.youtubeUrl ? (
+                  // Miniature YouTube
+                  <>
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center blur-lg scale-110"
+                      style={{ backgroundImage: `url('${getYoutubeThumbnail(realisation.youtubeUrl)}')` }}
+                    ></div>
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <img 
+                        src={getYoutubeThumbnail(realisation.youtubeUrl) || ''} 
+                        alt={realisation.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {/* Play button overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                        <svg className="w-12 h-12 text-white opacity-80 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </>
+                ) : realisation.images.length > 0 ? (
                   <>
                     {/* Cas 1: Une seule image avec flou en arrière-plan */}
                     {realisation.images.length === 1 && (
@@ -117,7 +139,7 @@ export default function RecentRealisations({ realisations }: RecentRealisationsP
                               {realisation.tags.map((tag) => (
                                   <span 
                                       key={tag.id}
-                                      className="px-2.5 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-600 group-hover:bg-orange-500 dark:group-hover:bg-orange-300 border-1 border-neutral-600 dark:group-hover:border-orange-700 group-hover:border-orange-600 transition-colors dark:border-white text-neutral-600 dark:group-hover:text-neutral-800 group-hover:text-neutral-200 dark:text-white rounded-full"
+                                      className="px-2.5 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-600 group-hover:bg-orange-500 dark:group-hover:bg-orange-800 border-1 border-neutral-600 dark:group-hover:border-orange-400 group-hover:border-orange-600 transition-colors dark:border-white text-neutral-600 dark:group-hover:text-orange-400 group-hover:text-neutral-200 dark:text-white rounded-full"
                                   >
                                       {tag.name}
                                   </span>
