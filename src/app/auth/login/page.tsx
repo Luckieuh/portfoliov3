@@ -16,7 +16,12 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
+    console.log('🔐 [LOGIN] Starting login attempt...');
+    console.log('🔐 [LOGIN] Username:', username);
+    console.log('🔐 [LOGIN] Password length:', password.length);
+
     try {
+      console.log('🔐 [LOGIN] Sending request to /api/auth/login...');
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -25,20 +30,33 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
+      console.log('🔐 [LOGIN] Response status:', response.status);
+      console.log('🔐 [LOGIN] Response ok:', response.ok);
+      console.log('🔐 [LOGIN] Response headers:', Object.fromEntries(response.headers.entries()));
+
       const data = await response.json();
+      console.log('🔐 [LOGIN] Response data:', data);
 
       if (!response.ok) {
+        console.error('🔐 [LOGIN] Login failed:', data.error);
         setError(data.error || 'Erreur lors de la connexion');
         return;
       }
 
+      console.log('🔐 [LOGIN] Login successful! Redirecting to /admin...');
       // Redirection vers le dashboard admin
       router.push('/admin');
     } catch (err) {
+      console.error('🔐 [LOGIN] Exception caught:', err);
+      console.error('🔐 [LOGIN] Error details:', {
+        name: (err as Error).name,
+        message: (err as Error).message,
+        stack: (err as Error).stack
+      });
       setError('Erreur lors de la connexion');
-      console.error(err);
     } finally {
       setIsLoading(false);
+      console.log('🔐 [LOGIN] Login attempt finished');
     }
   };
 
