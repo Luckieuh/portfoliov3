@@ -128,7 +128,7 @@ npm i -g vercel
 vercel login
 
 # Récupérer les variables d'environnement
-vercel env pull .env.local
+vercel env pull ..env.local
 
 # Exécuter les migrations
 npx prisma migrate deploy
@@ -181,7 +181,7 @@ Si vous n'avez pas encore d'utilisateur admin dans la base de données :
 
 ```bash
 # Via Prisma Studio (localement avec les variables d'environnement de production)
-vercel env pull .env.local
+vercel env pull ..env.local
 npx prisma studio
 
 # Ou créer un script de seed

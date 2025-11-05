@@ -105,7 +105,7 @@ vercel
 
 ### 1. Exécuter les migrations Prisma
 ```bash
-vercel env pull .env.local
+vercel env pull ..env.local
 npx prisma migrate deploy
 ```
 
