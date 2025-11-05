@@ -1,0 +1,2 @@
+# Ignore Prisma generated client to force regeneration on each build
+src/generated/prisma
