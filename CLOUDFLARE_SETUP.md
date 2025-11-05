@@ -14,14 +14,12 @@
 
 1. Dans R2, cliquez sur **Manage R2 API Tokens**
 2. Cliquez sur **Create API token**
-3. Donnez un nom au token (ex: `portfolio-upload`)
-4. Sélectionnez les permissions :
+4. Donnez un nom au token (ex: `portfolio-upload`)
+5. Sélectionnez les permissions :
    - **Object Read & Write** pour le bucket
-5. Cliquez sur **Create API Token**
-6. **Sauvegardez** l'Access Key ID et le Secret Access Key (ils ne seront affichés qu'une fois)
-Access Key ID : b0844e109254302b4b5856390eeaedce
-
-Secret Access Key : 7767d378d37af153455cace1f31a5468c83c6eab07f1a44fcfb489327482b259
+6. Cliquez sur **Create API Token**
+7. **Sauvegardez** l'Access Key ID et le Secret Access Key (ils ne seront affichés qu'une fois)
+   - **IMPORTANT** : Ne partagez jamais ces clés publiquement !
 
 
 ### 3. Configurer le domaine public (optionnel mais recommandé)
