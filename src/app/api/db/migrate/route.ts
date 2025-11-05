@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSync } from 'child_process';
-import path from 'path';
+import prisma from '../../../../../lib/prisma';
 
 /**
- * Endpoint pour exécuter les migrations Prisma
+ * Endpoint pour créer les tables Prisma directement via SQL
  * À utiliser UNE SEULE FOIS après le déploiement sur Vercel
  * 
  * Utilisation: POST /api/db/migrate
@@ -32,41 +31,162 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Exécuter les migrations
-    console.log('Exécution des migrations Prisma...');
+    // Exécuter les migrations via SQL directement
+    console.log('Création des tables via Prisma...');
     
     try {
-      const output = execSync('npx prisma migrate deploy', {
-        cwd: process.cwd(),
-        encoding: 'utf-8',
-        stdio: 'pipe',
-      });
+      // Créer la table admin
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "admin" (
+          "id" SERIAL PRIMARY KEY,
+          "username" TEXT NOT NULL UNIQUE,
+          "password" TEXT NOT NULL
+        );
+      `);
 
-      console.log('Migrations exécutées avec succès:', output);
+      // Créer la table Category
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "Category" (
+          "id" SERIAL PRIMARY KEY,
+          "name" TEXT NOT NULL UNIQUE
+        );
+      `);
+
+      // Créer la table Tag
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "Tag" (
+          "id" SERIAL PRIMARY KEY,
+          "name" TEXT NOT NULL UNIQUE
+        );
+      `);
+
+      // Créer la table Realisations
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "Realisations" (
+          "id" SERIAL PRIMARY KEY,
+          "title" TEXT NOT NULL,
+          "description" TEXT NOT NULL,
+          "location" TEXT,
+          "imageUrl" TEXT,
+          "videoUrl" TEXT,
+          "youtubeUrl" TEXT,
+          "link" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      // Créer la table RealisationImage
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "RealisationImage" (
+          "id" SERIAL PRIMARY KEY,
+          "url" TEXT NOT NULL,
+          "position" INTEGER NOT NULL DEFAULT 0,
+          "realisationId" INTEGER NOT NULL,
+          CONSTRAINT "RealisationImage_realisationId_fkey" 
+            FOREIGN KEY ("realisationId") 
+            REFERENCES "Realisations"("id") 
+            ON DELETE CASCADE 
+            ON UPDATE CASCADE
+        );
+      `);
+
+      // Créer la table SiteImage
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "SiteImage" (
+          "id" SERIAL PRIMARY KEY,
+          "key" TEXT NOT NULL UNIQUE,
+          "url" TEXT NOT NULL,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      // Créer les tables de relation many-to-many
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "_CategoryToRealisations" (
+          "A" INTEGER NOT NULL,
+          "B" INTEGER NOT NULL,
+          CONSTRAINT "_CategoryToRealisations_A_fkey" 
+            FOREIGN KEY ("A") 
+            REFERENCES "Category"("id") 
+            ON DELETE CASCADE 
+            ON UPDATE CASCADE,
+          CONSTRAINT "_CategoryToRealisations_B_fkey" 
+            FOREIGN KEY ("B") 
+            REFERENCES "Realisations"("id") 
+            ON DELETE CASCADE 
+            ON UPDATE CASCADE
+        );
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "_CategoryToRealisations_AB_unique" 
+        ON "_CategoryToRealisations"("A", "B");
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "_CategoryToRealisations_B_index" 
+        ON "_CategoryToRealisations"("B");
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "_RealisationsToTag" (
+          "A" INTEGER NOT NULL,
+          "B" INTEGER NOT NULL,
+          CONSTRAINT "_RealisationsToTag_A_fkey" 
+            FOREIGN KEY ("A") 
+            REFERENCES "Realisations"("id") 
+            ON DELETE CASCADE 
+            ON UPDATE CASCADE,
+          CONSTRAINT "_RealisationsToTag_B_fkey" 
+            FOREIGN KEY ("B") 
+            REFERENCES "Tag"("id") 
+            ON DELETE CASCADE 
+            ON UPDATE CASCADE
+        );
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "_RealisationsToTag_AB_unique" 
+        ON "_RealisationsToTag"("A", "B");
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "_RealisationsToTag_B_index" 
+        ON "_RealisationsToTag"("B");
+      `);
+
+      console.log('Tables créées avec succès!');
 
       return NextResponse.json({
         success: true,
-        message: 'Migrations Prisma exécutées avec succès',
-        output: output,
+        message: 'Tables créées avec succès! Votre base de données est prête.',
+        tables: [
+          'admin',
+          'Category',
+          'Tag',
+          'Realisations',
+          'RealisationImage',
+          'SiteImage',
+          '_CategoryToRealisations',
+          '_RealisationsToTag'
+        ],
       });
-    } catch (migrationError: any) {
-      console.error('Erreur lors de l\'exécution des migrations:', migrationError);
+    } catch (dbError: any) {
+      console.error('Erreur lors de la création des tables:', dbError);
 
-      // Si l'erreur est "no migrations to apply", c'est bon
-      if (migrationError.stdout?.includes('no migrations to apply')) {
+      // Si les tables existent déjà, c'est bon
+      if (dbError.message?.includes('already exists')) {
         return NextResponse.json({
           success: true,
-          message: 'Aucune migration à appliquer (déjà à jour)',
-          output: migrationError.stdout,
+          message: 'Les tables existent déjà (base de données déjà initialisée)',
         });
       }
 
       return NextResponse.json(
         {
-          error: 'Erreur lors de l\'exécution des migrations',
-          details: migrationError.message,
-          stdout: migrationError.stdout?.toString(),
-          stderr: migrationError.stderr?.toString(),
+          error: 'Erreur lors de la création des tables',
+          details: dbError.message,
         },
         { status: 500 }
       );
@@ -81,26 +201,39 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Endpoint GET pour vérifier l'état des migrations (sans exécuter)
+ * Endpoint GET pour vérifier si les tables existent
  */
 export async function GET(request: NextRequest) {
   try {
-    const output = execSync('npx prisma migrate status', {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-      stdio: 'pipe',
-    });
+    // Vérifier si la table Realisations existe
+    const result = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'Realisations'
+      );
+    `) as any[];
 
-    return NextResponse.json({
-      success: true,
-      message: 'État des migrations',
-      output: output,
-    });
+    const tablesExist = result[0]?.exists || false;
+
+    if (tablesExist) {
+      return NextResponse.json({
+        success: true,
+        message: 'Les tables existent dans la base de données',
+        status: 'initialized',
+      });
+    } else {
+      return NextResponse.json({
+        success: false,
+        message: 'Les tables n\'existent pas encore. Exécutez les migrations.',
+        status: 'not_initialized',
+      });
+    }
   } catch (error: any) {
     return NextResponse.json({
       success: false,
-      message: 'Erreur lors de la vérification du statut',
-      output: error.stdout?.toString() || error.message,
+      message: 'Erreur lors de la vérification',
+      error: error.message,
     });
   }
 }

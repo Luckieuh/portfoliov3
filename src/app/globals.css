@@ -152,22 +152,9 @@
   box-shadow: 0px 0px 12px 0px rgba(255,255,255,0.86);
 }
 
-.box-shadow-glow-light {
-  -webkit-box-shadow: 0px 0px 8px 0px rgba(255, 255, 255, 0.86); 
-  box-shadow: 0px 0px 8px 0px rgba(255, 255, 255, 0.86);
-}
-
 .box-shadow-glow-orange {
   -webkit-box-shadow: 0px 0px 12px 1px rgb(236, 126, 0); 
   box-shadow: 0px 0px 12px 1px rgb(236, 126, 0);
-}
-
-.text-shadow-orange {
-  text-shadow: 0 0 10px rgb(236, 126, 0);
-}
-
-.text-shadow-black {
-  text-shadow: 0px 0px 10px #ff9900, 0px 0px 10px #000000, 0px 0px 6px #000000;
 }
 
 .vertical-text {
@@ -188,14 +175,4 @@
   >*{
       flex: 0 0 100%;
   }
-}
-
-/* Masquer les scrollbars verticales mais garder le défilement */
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
 }
