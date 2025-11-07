@@ -16,17 +16,17 @@ async function checkDatabase() {
         if (realisationsCount > 0) {
             const sample = await prisma.realisations.findFirst({
                 include: {
-                    images: true,
-                    categories: true,
-                    tags: true,
+                    RealisationImage: true,
+                    Category: true,
+                    Tag: true,
                 }
             });
             console.log('   Sample realisation:', {
                 id: sample?.id,
                 title: sample?.title,
-                hasImages: (sample?.images?.length || 0) > 0,
-                categoriesCount: sample?.categories?.length || 0,
-                tagsCount: sample?.tags?.length || 0,
+                hasImages: (sample?.RealisationImage?.length || 0) > 0,
+                categoriesCount: sample?.Category?.length || 0,
+                tagsCount: sample?.Tag?.length || 0,
             });
         }
 
@@ -62,12 +62,14 @@ async function checkDatabase() {
         // Test the exact query from page.tsx
         console.log('\n🧪 Testing homepage query...');
         const homeRealisations = await prisma.realisations.findMany({
+            take: 3,
+            orderBy: { createdAt: 'desc' },
             include: {
-                images: {
+                RealisationImage: {
                     orderBy: { position: 'asc' },
                 },
-                categories: true,
-                tags: true,
+                Category: true,
+                Tag: true,
             },
         });
         console.log(`   Query result: ${homeRealisations.length} realisations`);
