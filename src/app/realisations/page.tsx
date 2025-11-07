@@ -10,20 +10,42 @@ import prisma from '../../../lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function Realisation() {
-    // Récupérer les projets depuis la base de données
+    // Récupérer les projets depuis la base de données en ordre chronologique décroissant
     const projectsData = await prisma.realisations.findMany({
         orderBy: { createdAt: 'desc' },
-        include: {
-            images: {
+        select: {
+            id: true,
+            title: true,
+            description: true,
+            videoUrl: true,
+            youtubeUrl: true,
+            link: true,
+            location: true,
+            createdAt: true,
+            RealisationImage: {
+                select: {
+                    id: true,
+                    url: true,
+                    position: true,
+                },
                 orderBy: { position: 'asc' },
             },
-            categories: true,
-            tags: true,
+            Category: {
+                select: {
+                    name: true,
+                },
+            },
+            Tag: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
         },
     });
 
     // Convertir les dates en chaînes pour éviter les problèmes de sérialisation
-    const projects = projectsData.map((project: any) => ({
+    const projects = projectsData.map((project) => ({
         id: project.id,
         title: project.title,
         description: project.description,
@@ -31,9 +53,9 @@ export default async function Realisation() {
         youtubeUrl: project.youtubeUrl,
         link: project.link,
         location: project.location,
-        categories: project.categories.map((cat: any) => cat.name),
-        tags: project.tags,
-        images: project.images,
+        categories: project.Category.map((cat) => cat.name),
+        tags: project.Tag,
+        images: project.RealisationImage,
         createdAt: project.createdAt.toISOString(),
     }));
     

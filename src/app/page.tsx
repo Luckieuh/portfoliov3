@@ -5,10 +5,9 @@ import Footer from './components/Footer';
 import LogoLoop from './components/LogoLoop';
 import RecentRealisations from './components/RecentRealisations';
 import ContactForm from './components/ContactForm';
-import prisma from '../../lib/prisma';
 import { DynamicBanner, DynamicProfileImage, DynamicRealisationsTitles } from './components/DynamicImages';
 import BtnShadow from './components/BtnShadow';
-
+import prisma from '../../lib/prisma';
 
 const socialItems = [
   { label: 'Instagram', link: 'https://www.instagram.com/lucsar.tsn/' },
@@ -17,31 +16,60 @@ const socialItems = [
 ];
 
 export default async function Home() {
-    // Récupérer les 3 dernières réalisations avec tri par date et ID
+    // Récupérer les 3 dernières réalisations en ordre chronologique
     let realisations: any[] = [];
     try {
-        realisations = await prisma.realisations.findMany({
-            include: {
-                images: {
+        const realisationsData = await prisma.realisations.findMany({
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                videoUrl: true,
+                youtubeUrl: true,
+                link: true,
+                location: true,
+                imageUrl: true,
+                createdAt: true,
+                RealisationImage: {
+                    select: {
+                        id: true,
+                        url: true,
+                        position: true,
+                    },
                     orderBy: { position: 'asc' },
                 },
-                categories: true,
-                tags: true,
+                Category: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                Tag: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
             },
         });
-        
-        // Trier par date (plus récente d'abord), puis par ID en cas de dates identiques
-        realisations.sort((a, b) => {
-            const dateA = new Date(a.createdAt).getTime();
-            const dateB = new Date(b.createdAt).getTime();
-            if (dateA !== dateB) {
-                return dateB - dateA;
-            }
-            return b.id - a.id;
-        });
-        
-        // Prendre les 3 premiers
-        realisations = realisations.slice(0, 3);
+
+        // Mapper les données pour correspondre au format attendu par le composant
+        realisations = realisationsData.map((realisation) => ({
+            id: realisation.id,
+            title: realisation.title,
+            description: realisation.description,
+            videoUrl: realisation.videoUrl,
+            youtubeUrl: realisation.youtubeUrl,
+            link: realisation.link,
+            location: realisation.location,
+            imageUrl: realisation.imageUrl,
+            createdAt: realisation.createdAt,
+            images: realisation.RealisationImage,
+            categories: realisation.Category,
+            tags: realisation.Tag,
+        }));
     } catch (err) {
         console.error('Prisma DB error on homepage:', err);
     }

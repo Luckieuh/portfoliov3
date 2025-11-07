@@ -1,65 +1,60 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
-}
-
-model Realisations {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String
-  location    String?
-  imageUrl    String?
-  videoUrl    String?
-  youtubeUrl  String?
-  link        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
-  images      RealisationImage[]
-  categories  Category[] @relation("CategoryToRealisations")
-  tags        Tag[] @relation("RealisationsToTag")
-}
-
-model RealisationImage {
-  id            Int @id @default(autoincrement())
-  url           String
-  position      Int @default(0)
-  realisationId Int
-  realisation   Realisations @relation(fields: [realisationId], references: [id], onDelete: Cascade)
 }
 
 model Category {
-  id    Int @id @default(autoincrement())
-  name  String @unique
-  realisations Realisations[] @relation("CategoryToRealisations")
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  Realisations Realisations[]
 }
 
-model Tag {
-  id    Int @id @default(autoincrement())
-  name  String @unique
-  realisations Realisations[] @relation("RealisationsToTag")
+model RealisationImage {
+  id            Int          @id @default(autoincrement())
+  url           String
+  position      Int          @default(0)
+  realisationId Int
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now())
+  Realisations  Realisations @relation(fields: [realisationId], references: [id], onDelete: Cascade)
+}
+
+model Realisations {
+  id               Int                @id @default(autoincrement())
+  title            String
+  description      String
+  location         String?
+  imageUrl         String?
+  videoUrl         String?
+  youtubeUrl       String?
+  link             String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now())
+  RealisationImage RealisationImage[]
+  Category         Category[]
+  Tag              Tag[]
 }
 
 model SiteImage {
-  id        Int @id @default(autoincrement())
-  key       String @unique
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
   url       String
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
+}
+
+model Tag {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  Realisations Realisations[]
 }
 
 model admin {
-  id          Int       @id @default(autoincrement())
-  username    String    @unique
-  password    String
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
 }

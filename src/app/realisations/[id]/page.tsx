@@ -38,36 +38,86 @@ function extractYoutubeId(url: string): string | null {
 export default async function RealisationDetail({ params }: Props) {
   const { id } = await params;
   
-  const project = await prisma.realisations.findUnique({
+  const projectData = await prisma.realisations.findUnique({
     where: { id: parseInt(id) },
-    include: {
-      images: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      videoUrl: true,
+      youtubeUrl: true,
+      link: true,
+      location: true,
+      createdAt: true,
+      RealisationImage: {
+        select: {
+          id: true,
+          url: true,
+          position: true,
+        },
         orderBy: { position: 'asc' },
       },
-      categories: true,
-      tags: true,
+      Category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      Tag: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 
-  if (!project) {
+  if (!projectData) {
     notFound();
   }
 
+  // Mapper les données pour correspondre au format attendu
+  const project = {
+    ...projectData,
+    images: projectData.RealisationImage,
+    categories: projectData.Category,
+    tags: projectData.Tag,
+  };
+
   // Récupérer 6 autres réalisations (exclure la current)
-  const otherProjects = await prisma.realisations.findMany({
+  const otherProjectsData = await prisma.realisations.findMany({
     where: {
       id: { not: parseInt(id) },
     },
     take: 6,
-    include: {
-      images: {
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      youtubeUrl: true,
+      RealisationImage: {
+        select: {
+          id: true,
+          url: true,
+        },
         take: 1,
         orderBy: { position: 'asc' },
       },
-      categories: true,
-      tags: true,
+      Tag: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
+
+  // Mapper les données des autres projets
+  const otherProjects = otherProjectsData.map((proj) => ({
+    ...proj,
+    images: proj.RealisationImage,
+    tags: proj.Tag,
+  }));
 
   return (
     <div className="w-full min-h-screen dark:bg-neutral-900 bg-neutral-100  overflow-x-hidden">
