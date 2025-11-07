@@ -7,11 +7,11 @@ export async function GET() {
     const realisations = await prisma.realisations.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        images: {
+        RealisationImage: {
           orderBy: { position: 'asc' },
         },
-        categories: true,
-        tags: true,
+        Category: true,
+        Tag: true,
       },
     });
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         videoUrl: videoUrl || null,
         youtubeUrl: youtubeUrl || null,
         link: link || null,
-        images: {
+        RealisationImage: {
           create: Array.isArray(newImages) && newImages.length > 0
             ? newImages.map((img: { url: string; position: number }) => ({
                 url: img.url,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
               }))
             : [],
         },
-        categories: {
+        Category: {
           connect: Array.isArray(categoryNames) && categoryNames.length > 0
             ? await Promise.all(
                 categoryNames.map(async (name: string) => {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
               ).then(cats => cats.filter(c => c.id !== 0))
             : [],
         },
-        tags: {
+        Tag: {
           connect: Array.isArray(tagNames) && tagNames.length > 0
             ? await Promise.all(
                 tagNames.map(async (name: string) => {
@@ -88,11 +88,11 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        images: {
+        RealisationImage: {
           orderBy: { position: 'asc' },
         },
-        categories: true,
-        tags: true,
+        Category: true,
+        Tag: true,
       },
     });
 

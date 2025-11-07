@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Prisma } from '../../../../generated/prisma/client';
+import prisma from '../../../../lib/prisma';
 
 // GET - Récupérer toutes les images du site
 export async function GET() {
   try {
-    const images = await Prisma.siteImage.findMany({
+    const images = await prisma.siteImage.findMany({
       orderBy: { key: 'asc' },
     });
 

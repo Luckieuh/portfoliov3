@@ -20,9 +20,9 @@ export async function GET(
     const realisation = await prisma.realisations.findUnique({
       where: { id },
       include: {
-        categories: true,
-        tags: true,
-        images: {
+        Category: true,
+        Tag: true,
+        RealisationImage: {
           orderBy: { position: 'asc' },
         },
       },
@@ -122,7 +122,7 @@ export async function PUT(
         youtubeUrl: youtubeUrl || null,
         link: link || null,
         createdAt: createdAt ? new Date(createdAt) : undefined,
-        images: {
+        RealisationImage: {
           create: hasNewImages
             ? newImages.map((img: { url: string; position: number }, index: number) => ({
                 url: img.url,
@@ -130,17 +130,17 @@ export async function PUT(
               }))
             : [],
         },
-        categories: {
+        Category: {
           set: categoryIds.map(id => ({ id })),
         },
-        tags: {
+        Tag: {
           set: tagIds.map(id => ({ id })),
         },
       },
       include: {
-        categories: true,
-        tags: true,
-        images: {
+        Category: true,
+        Tag: true,
+        RealisationImage: {
           orderBy: { position: 'asc' },
         },
       },
